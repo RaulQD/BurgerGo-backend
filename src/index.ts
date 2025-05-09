@@ -1,6 +1,8 @@
 import { App } from "./server";
 
 
+(async () => {
+  const app = new App();
 
-const app = new App();
-app.init();
+  await app.init();
+})();

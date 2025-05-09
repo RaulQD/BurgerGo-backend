@@ -1,5 +1,7 @@
 import { join } from "path";
 import { DataSource } from "typeorm";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const AppDataBaseSources = new DataSource ({
   type:'postgres',
@@ -10,5 +12,6 @@ export const AppDataBaseSources = new DataSource ({
   database: process.env.DB_NAME || 'sysburger',
   synchronize: true,
   logging: true,
-  entities: []
+  entities: [join(__dirname, '../**/*.entity{.ts,.js}')],
+  migrations: [join(__dirname, '../migrations/**/*{.ts,.js}')],
 })
