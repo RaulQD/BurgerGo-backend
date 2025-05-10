@@ -1,26 +1,38 @@
-import express from 'express';
+import express, { Application, Router } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import { corsConfig } from './config/cors.config';
 import { postSQLConnection } from './db/postgresql.config';
 import { DataSource } from 'typeorm';
 import { exit } from 'node:process';
-import { UserRoutes } from './routes/user.routes';
 
-export class App {
-  public app: express.Application;
-  public port: number;
-  constructor() {
+interface IApp {
+  port: number | string;
+  routes: Router;
+}
+export default class App {
+  public readonly app: Application;
+  public port: number | string;
+  private readonly routes: Router;
+  constructor(options: IApp) {
+    const { port,routes } = options;
     this.app = express();
-    this.port = Number(process.env.PORT) || 3000;
+    this.port = Number(port) || 3000;
+    this.routes = routes;
     this.initializeMiddlewares();
     this.initializeRoutes();
   }
   /**
    * Connecta a la base de datos utilizando una conexión postSQL.
+   * Async/await para manejar la conexión de manera asíncrona.
    */
   private async connectToDatabase(): Promise<DataSource | void> {
-    await postSQLConnection();
+    try {
+      return await postSQLConnection();
+    } catch (error) {
+      console.error('Error connecting to the database:', error);
+      throw error
+    }
   }
 
   /**
@@ -32,17 +44,10 @@ export class App {
     this.app.use(cors(corsConfig))
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
-
-
   }
-  /**
-   * Método para inicializar las rutas de la aplicación
-   * Aquí se pueden agregar las rutas de los controladores
-   */
-  public initializeRoutes() {
-    this.app.use('/api/user', UserRoutes.routes())
+  private initializeRoutes() {
+    this.app.use('/api', this.routes );
   }
-
   /**
    * Inicializa el servidor y la conexión a la base de datos
    */
