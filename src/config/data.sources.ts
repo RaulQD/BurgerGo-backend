@@ -12,6 +12,6 @@ export const AppDataBaseSources = new DataSource ({
   database: process.env.DB_NAME || 'sysburger',
   synchronize: true,
   logging: true,
-  entities: [join(__dirname, '../**/*.entity{.ts,.js}')],
+  entities: [join(__dirname, '../entities/**/*{.ts,.js}')],
   migrations: [join(__dirname, '../migrations/**/*{.ts,.js}')],
 })
