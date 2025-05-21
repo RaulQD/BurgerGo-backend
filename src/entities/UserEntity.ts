@@ -1,30 +1,37 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { RolEntity } from "./RolEntity";
 import { IUser } from "../interfaces/User";
+import { CustomerEntity } from "./CustomerEntity";
+import { EmployeeEntity } from "./EmployeeEntity";
 
+export enum UserType {
+  ADMIN = "admin",
+  EMPLOYEE = "employee",
+  CUSTOMER = "customer",
+}
 @Entity({ name: "users" })
-export class UserEntity implements IUser {
-  @PrimaryGeneratedColumn()
-  id!: number;
-  @Column({ type: "varchar", length: 200 })
-  name!: string;
-  @Column({ type: "varchar", length: 200 })
-  last_name!: string;
-  @Column({ type: "varchar", length: 200 })
-  @Unique(["email"])
-  email!: string;
-  @Column({ type: "varchar", length: 200 })
-  password!: string;
+@Unique(["email"])
+@Unique(["username"])
+export class UserEntity {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
   @Column({ type: "varchar", length: 200, nullable: true })
-  imageURL?: string;
+  email: string | null;
+  @Column({ type: "varchar", length: 200, nullable: true })
+  username: string | null;
+  @Column({ type: "varchar", length: 200 })
+  password: string;
+  @Column({ type: "enum", enum: UserType, default: UserType.CUSTOMER })
+  type: UserType;
   @CreateDateColumn({ name: "created_at" })
-  createdAt!: Date;
-  @CreateDateColumn({ name: "updated_at" })
-  updatedAt!: Date;
+  createdAt: Date;
+  @UpdateDateColumn({ name: "updated_at" })
+  updatedAt: Date;
   @ManyToOne(() => RolEntity, (rol => rol.user))
-  rol!: RolEntity;
-
-  public fullName(): string {
-    return `${this.name} ${this.last_name}`;
-  }
+  @JoinColumn({ name: "rol_id" })
+  rol: RolEntity;
+  @OneToOne(() => CustomerEntity, (customer) => customer.user)
+  customer: CustomerEntity;
+  @OneToOne(() => EmployeeEntity, (employee => employee.user))
+  employee: EmployeeEntity;
 }

@@ -1,37 +1,29 @@
 // import { AppDataBaseSources } from "../config/data.sources";
 // import { UserRepository } from "../repositories/UserRepository";
 
+import { Repository } from "typeorm";
+// import { CreateUserDTO } from "../dtos/customer-user/createUser.dto";
+import { UserEntity } from "../entities/UserEntity";
+import { AppDataBaseSources } from "../config/data.sources";
+import { ConflictException } from "../errors/custom.error";
+import { RolEntity } from "../entities/RolEntity";
+
+
 export class UserService {
 
-  // private userRepository: UserRepository;
-
+  private userRepository: Repository<UserEntity>;
+  private rolRepository: Repository<RolEntity>;
   constructor() {
-    // this.userRepository = new UserRepository();
+    this.userRepository = AppDataBaseSources.getRepository(UserEntity);
+    this.rolRepository = AppDataBaseSources.getRepository(RolEntity);
   }
 
   // Método para obtener todos los usuarios
-  async getAllUser() {
+  async getAllUser():Promise<UserEntity[]> {
     // Implementar lógica para obtener todos los usuarios
     // Por ahora retornamos datos de prueba
-    const users = [
-      {
-        id: 1,
-        name: 'Usuario de prueba',
-        email: 'usuario@usuario.com',
-        password: '123456',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: 2,
-        name: 'Usuario de prueba 2',
-        email: 'usuario@usuario.com',
-        password: '123456',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ]
-    return users;
+   
+    return [];
   }
 
   // Método para obtener un usuario por ID
@@ -47,11 +39,15 @@ export class UserService {
   }
 
   // Método para crear un usuario
-  public async createUser(name: string, email: string) {
-    // Implementar lógica para crear un usuario
-    // Por ahora retornamos datos de prueba
-    return { id: '123', name, email };
-  }
+  // public async createUser(userData: CreateUserDTO): Promise<UserEntity> {
+  //   // Implementar lógica para crear un usuario
+  //   const existingUser = await this.userRepository.findOneBy({ email: userData.email });
+  //   if (existingUser) throw new ConflictException(`El usuario ${userData.email} ya existe`);
+  //   // const existingRol = await this.rolRepository.findOneBy({where: });
+  //   const newUser = this.userRepository.create({ ...userData });
+  //   // Guardar el nuevo usuario en la base de datos
+  //   return await this.userRepository.save(newUser);
+  // }
 
   // Método para actualizar un usuario
   public async updateUser(id: string, name: string, email: string) {
