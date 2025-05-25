@@ -30,9 +30,9 @@ export class CreateEmployeeDTO {
   username: string;
   @IsNotEmpty({ message: 'La contraseña es requerida' })
   @IsString({ message: 'La contraseña debe ser un texto' })
-  @Length(8, 30, { message: 'La contraseña debe tener entre 8 y 30 caracteres' })
+  @Length(8, 12, { message: 'La contraseña debe tener entre 8 y 12 caracteres' })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-    message: 'La contraseña debe contener al menos una letra minúscula, una mayúscula y un número',
+    message: 'La contraseña debe contener al menos 8 caracteres, una letra minúscula, una mayúscula y un número',
   })
   password: string;
 

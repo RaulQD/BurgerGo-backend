@@ -1,11 +1,11 @@
 import { Response } from 'express';
 export class HttpResponse {
-    OK(res:Response, data:any, message:string) {
-        return res.status(200).json({
-            status: 200,
-            message: message,
-            data: data
-        });
+  OK(res: Response, message?: string, data?: any) {
+    return res.status(200).json({
+      status: 200,
+      message: message,
+      data
+    });
   }
   NOT_FOUND(res: Response, message: string) {
     return res.status(404).json({
@@ -13,11 +13,11 @@ export class HttpResponse {
       message: message
     });
   }
-  CREATED(res: Response,  message: string,data:any) {
+  CREATED(res: Response, message: string, data: any) {
     return res.status(201).json({
       status: 201,
       message: message,
-      data: data
+      data
     });
   }
   BAD_REQUEST(res: Response, message: string) {
@@ -44,5 +44,5 @@ export class HttpResponse {
       message: message
     });
   }
-  
+
 }
