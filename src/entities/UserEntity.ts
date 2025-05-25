@@ -1,6 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 import { RolEntity } from "./RolEntity";
-import { IUser } from "../interfaces/User";
 import { CustomerEntity } from "./CustomerEntity";
 import { EmployeeEntity } from "./EmployeeEntity";
 
@@ -16,7 +15,7 @@ export class UserEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
   @Column({ type: "varchar", length: 200, nullable: true })
-  email: string | null;
+  email: string;
   @Column({ type: "varchar", length: 200, nullable: true })
   username: string | null;
   @Column({ type: "varchar", length: 200 })

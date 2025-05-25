@@ -38,17 +38,6 @@ export class UserService {
     return user;
   }
 
-  // Método para crear un usuario
-  // public async createUser(userData: CreateUserDTO): Promise<UserEntity> {
-  //   // Implementar lógica para crear un usuario
-  //   const existingUser = await this.userRepository.findOneBy({ email: userData.email });
-  //   if (existingUser) throw new ConflictException(`El usuario ${userData.email} ya existe`);
-  //   // const existingRol = await this.rolRepository.findOneBy({where: });
-  //   const newUser = this.userRepository.create({ ...userData });
-  //   // Guardar el nuevo usuario en la base de datos
-  //   return await this.userRepository.save(newUser);
-  // }
-
   // Método para actualizar un usuario
   public async updateUser(id: string, name: string, email: string) {
     // Implementar lógica para actualizar un usuario
