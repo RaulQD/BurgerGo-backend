@@ -34,7 +34,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
     const userRespository = AppDataBaseSources.getRepository(UserEntity);
     const user = await userRespository.findOne({ where: { id: decoded.id }, relations: ['rol'] });
     if (!user) {
-      res.status(401).json({ message: 'Acceso denegado:Usuario no encontrado', code: 'USER_NOT_FOUND' });
+      res.status(401).json({ message: 'Acceso denegado: Usuario no encontrado', code: 'USER_NOT_FOUND' });
       return;
     }
     //añadir el usuario al request

@@ -5,3 +5,8 @@ export interface JwtPayload {
   username?: string;
   rol?: string;
 }
+
+export interface TokenPair {
+  access_token: string;
+  refresh_token?: string;
+}

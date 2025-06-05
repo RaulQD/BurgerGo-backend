@@ -1,7 +1,9 @@
 
 import express, { Application, Router } from 'express';
 import morgan from 'morgan';
+import cors from 'cors';
 import dotenv from 'dotenv';
+import { corsConfig } from './config/cors.config';
 
 dotenv.config();
 interface Options {
@@ -21,6 +23,7 @@ export class Server {
   }
 
   private initializeMiddlewares() {
+    this.app.use(cors(corsConfig));
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(morgan('dev'));

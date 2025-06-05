@@ -22,9 +22,9 @@ export class UserEntity {
   password: string;
   @Column({ type: "enum", enum: UserType, default: UserType.CUSTOMER })
   type: UserType;
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: "created_at", select: false })
   createdAt: Date;
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: "updated_at", select: false })
   updatedAt: Date;
   @ManyToOne(() => RolEntity, (rol => rol.user))
   @JoinColumn({ name: "rol_id" })
