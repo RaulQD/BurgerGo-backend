@@ -3,7 +3,7 @@ import { CorsOptions } from "cors";
 
 export const corsConfig: CorsOptions = {
   origin: (origin, callback) => {
-    const whiteList = [process.env.FRONTEND_URL || 'http://localhost:3000']
+    const whiteList = [process.env.FRONTEND_URL || 'http://localhost:5173']
     if(!origin || whiteList.includes(origin)) {
       callback(null, true)  
     } else {

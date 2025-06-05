@@ -52,8 +52,8 @@ export class AuthService {
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) throw new NotFoundException(`El usuario o la contraseña son incorrectos`);
     //GENERAR EL TOKEN
-    const token = JwtConfig.generateToken(user);
-    const result = { access_token: token }
+    const access_token = JwtConfig.generateToken(user);
+    const result = { access_token }
     return result;
   }
 
@@ -144,13 +144,17 @@ export class AuthService {
     if (userBasic?.type === UserType.EMPLOYEE) {
       relations.push('employee')
     }
+   
     const user = await this.userRepository.findOne({
       where: { id },
       relations
     })
-    const { password, ...userWithoutPassword } = user || {};
-    if (!user) throw new NotFoundException(`El usuario nno fue encontrao.`);
     
+    const {
+      password,
+      ...userWithoutPassword } = user || {};
+    if (!user) throw new NotFoundException(`El usuario no fue encontrado.`);
+
     return userWithoutPassword;
   }
 }

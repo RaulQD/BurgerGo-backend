@@ -18,9 +18,8 @@ export class AuthController extends BaseController {
     try {
       const { email, password } = req.body;
       const user = await this.authService.loginCustomer({ email, password });
-      this.httpResponse.OK(res, "Usuario logueado correctamente", user);
+      this.httpResponse.OK(res, "Bienvenido a BurgeGO", user);
     } catch (error) {
-      console.log('error', error);
       this.handleError(error, res);
     }
   }
@@ -30,7 +29,6 @@ export class AuthController extends BaseController {
       const user = await this.authService.loginEmployee({ username, password });
       this.httpResponse.OK(res, "Usuario logueado correctamente", user);
     } catch (error) {
-      console.log('error', error);
       this.handleError(error, res);
     }
   }
@@ -41,7 +39,6 @@ export class AuthController extends BaseController {
       const user = await this.authService.registerCustomerUser(userData);
       this.httpResponse.CREATED(res, "Usuario creado correctamente", user);
     } catch (error) {
-      console.log('error', error);
       this.handleError(error, res);
     }
   }
@@ -58,8 +55,8 @@ export class AuthController extends BaseController {
   public getProfile = async (req: Request, res: Response):Promise<void> => {
     try {
       const user = req.user;
-      const userData = await this.authService.getProfile(user.id);
-      this.httpResponse.OK(res, "Usuario encontrado correctamente", userData);
+      const data = await this.authService.getProfile(user.id);
+      this.httpResponse.OK(res, "Usuario encontrado correctamente", data);
     } catch (error) {
       this.handleError(error, res);
     }

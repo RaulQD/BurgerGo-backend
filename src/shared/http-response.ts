@@ -1,10 +1,11 @@
 import { Response } from 'express';
 export class HttpResponse {
+  
   OK(res: Response, message?: string, data?: any) {
     return res.status(200).json({
       status: 200,
-      message: message,
-      data
+      message: message || null,
+      data: data 
     });
   }
   NOT_FOUND(res: Response, message: string) {
@@ -41,6 +42,12 @@ export class HttpResponse {
   INTERNAL_SERVER_ERROR(res: Response, message: string) {
     return res.status(500).json({
       status: 500,
+      message: message
+    });
+  }
+  CONFLICT(res: Response, message: string) {
+    return res.status(409).json({
+      status: 409,
       message: message
     });
   }
