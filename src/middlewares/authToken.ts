@@ -3,6 +3,7 @@ import { JwtConfig } from '../config/jwt.config';
 import { AppDataBaseSources } from '../config/data.sources';
 import { UserEntity } from '../entities/UserEntity';
 import jwt from 'jsonwebtoken';
+import { logger } from '../utils/logger';
 
 //EXTENDER EL REQUEST DE EXPRESS PARA QUE TENGA EL USUARIO
 declare global {
@@ -45,7 +46,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
       res.status(401).json({ message: 'Acceso denegado:Token expirado', code: 'TOKEN_EXPIRED' });
       return;
     }
-    console.error('Error al verificar el token:', error);
+    logger.error('Error al verificar el token:', error);
     res.status(403).json({
       success: false,
       message: 'Token no válido'

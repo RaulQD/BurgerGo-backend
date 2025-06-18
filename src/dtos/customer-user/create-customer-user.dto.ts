@@ -19,11 +19,13 @@ export class CreateCustomerDTO {
   @IsString({ message: 'El teléfono debe ser un texto' })
   @Length(7, 15, { message: 'El teléfono debe tener entre 7 y 15 caracteres' })
   phone: string;
-
+  @IsNotEmpty({ message: 'El DNI es requerido' })
+  @IsString({ message: 'El DNI debe ser un texto' })
+  @Length(8, 8, { message: 'El DNI debe tener 8 caracteres' })
+  dni: string;
   @IsNotEmpty({ message: 'El email es requerido' })
   @IsEmail({}, { message: 'El email debe tener un formato válido' })
   email: string;
-
   @IsNotEmpty({ message: 'La contraseña es requerida' })
   @IsString({ message: 'La contraseña debe ser un texto' })
   @Length(8, 12, { message: 'La contraseña debe tener entre 8 y 12 caracteres' })
