@@ -5,8 +5,7 @@ export class BaseController {
   protected readonly httpResponse = new HttpResponse();
   protected handleError(error: any, res: any) {
     if (error instanceof HttpException) {
-      return res.status(error.status).json({
-        status: error.status,
+      return res.status().json({
         message: error.message,
       });
     }

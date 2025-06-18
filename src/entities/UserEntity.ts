@@ -29,7 +29,7 @@ export class UserEntity {
   @ManyToOne(() => RolEntity, (rol => rol.user))
   @JoinColumn({ name: "rol_id" })
   rol: RolEntity;
-  @OneToOne(() => CustomerEntity, (customer) => customer.user)
+  @OneToOne(() => CustomerEntity, (customer) => customer.user, { cascade: true })
   customer: CustomerEntity;
   @OneToOne(() => EmployeeEntity, (employee => employee.user))
   employee: EmployeeEntity;

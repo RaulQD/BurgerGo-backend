@@ -1,21 +1,26 @@
-// src/middlewares/errorHandler.ts
 import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 import { HttpException } from "../errors/custom.error";
-// import { CustomError } from "../errors/custom.error";
+import { AppError } from "../utils/AppError";
+import { INTERNAL_SERVER_ERROR } from "../constants/http";
+import { logger } from "../utils/logger";
 
-// Nota el tipo ErrorRequestHandler y el export default
-// export const errorHandler = (err: Error, _req: Request, res: Response, _next: NextFunction): void => {
-//   // console.log(err);
-//   if (err instanceof HttpException) {
-//     res.status(err.status).json({
-//       status: err.status,
-//       message: err.message,
-//     });
-//   }
-//   console.log(`[Error] ${err.stack || err.message}`);
-//   res.status(500).json({
-//     status: 500,
-//     message: "Internal Server Error",
-//     errors: err.message,
-//   });
-// };
+
+const handlerAppError = (res: Response, error: AppError) => {
+  res.status(error.statusCode).json({
+    message: error.message,
+    errorCode: error.errorCode,
+  });
+}
+
+//Nota el tipo ErrorRequestHandler y el export default
+export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
+  if (error instanceof AppError) {
+    handlerAppError(res, error);
+    return;
+  }
+  logger.error(`${error.stack || error.message}`);
+  res.status(INTERNAL_SERVER_ERROR).json({
+    message: "Internal Server Error",
+    errors: error.message,
+  });
+};

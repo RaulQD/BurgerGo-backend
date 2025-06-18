@@ -2,6 +2,7 @@ import { ClassConstructor, plainToInstance } from "class-transformer";
 import { validate, ValidationError } from "class-validator";
 import { Request, Response, NextFunction } from "express";
 import { skip } from "node:test";
+import { logger } from "../utils/logger";
 
 
 export function validateMiddlewareDTO(type: any) {
@@ -9,13 +10,13 @@ export function validateMiddlewareDTO(type: any) {
     const dtoObject = plainToInstance(type, req.body);
     const errors = await validate(dtoObject as any, { skipMissingProperties: false });
     if (errors.length > 0) {
-      console.log("Validation errors: ", errors);
 
       const validationErrors = errors.map((error: ValidationError) => ({
         property: error.property,
         constraints: error.constraints,
       }));
-      console.log("Validation errors: ", validationErrors);
+      //VALIDATION ERROR IN THE BODY REQUEST
+      logger.error({ msa: 'Validation error in the body request', error: validationErrors });
 
       res.status(400).json({
         status: 400,

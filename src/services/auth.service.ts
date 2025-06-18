@@ -1,16 +1,19 @@
-import { QueryRunner, Repository } from "typeorm";
+import { Not, QueryRunner, Repository } from "typeorm";
 import { UserEntity, UserType } from "../entities/UserEntity";
 import { AppDataBaseSources } from "../config/data.sources";
 import { CreateCustomerDTO } from "../dtos/customer-user/create-customer-user.dto";
 import { ConflictException, NotFoundException } from "../errors/custom.error";
 import { RolEntity } from "../entities/RolEntity";
 import { CustomerEntity } from "../entities/CustomerEntity";
-import { comparePassword, hashPassword } from "../utils/bcrypt-hash";
 import { CreateEmployeeDTO } from "../dtos/employee-user/create-employee-user.dto";
 import { EmployeeEntity } from "../entities/EmployeeEntity";
 import { JwtConfig } from "../config/jwt.config";
 import { LoginCustomerDTO } from "../dtos/auth/login-customer.dto";
 import { LoginEmployeeDTO } from "../dtos/auth/login-employee.dto";
+import { UpdateCustomerUserDTO } from "../dtos/customer-user/update-customer-user.dto";
+import { CONFLICT, NOT_FOUND, UNAUTHORIZED } from "../constants/http";
+import { ChangePasswordDTO } from "../dtos/auth/change-password.dto";
+import { AppError, comparePassword, hashPassword, logger } from "../utils";
 
 
 export class AuthService {
@@ -19,12 +22,14 @@ export class AuthService {
   private customerRepository: Repository<CustomerEntity>;
   private employeeRepository: Repository<EmployeeEntity>;
   private queryRunner: QueryRunner;
+  private logger = logger;
   constructor() {
     this.userRepository = AppDataBaseSources.getRepository(UserEntity);
     this.rolRepository = AppDataBaseSources.getRepository(RolEntity);
     this.customerRepository = AppDataBaseSources.getRepository(CustomerEntity);
     this.employeeRepository = AppDataBaseSources.getRepository(EmployeeEntity);
     this.queryRunner = AppDataBaseSources.createQueryRunner();
+
   }
 
   public async loginCustomer(loginData: LoginCustomerDTO) {
@@ -33,13 +38,12 @@ export class AuthService {
       where: { email: email.toLowerCase() },
       relations: ['rol', 'customer'],
     })
-    if (!user) throw new NotFoundException(`El usuario o la contraseña son incorrectos`);
+    if (!user) throw new AppError(`El usuario o la contraseña son incorrectos`, UNAUTHORIZED);
     const isPasswordValid = await comparePassword(password, user.password);
-    if (!isPasswordValid) throw new NotFoundException(`El usuario o la contraseña son incorrectos`);
+    if (!isPasswordValid) throw new AppError(`El usuario o la contraseña son incorrectos`, UNAUTHORIZED);
     //GENERAR EL TOKEN
     const token = JwtConfig.generateToken(user);
     const result = { access_token: token }
-
     return result;
   }
   public async loginEmployee(loginData: LoginEmployeeDTO) {
@@ -48,9 +52,9 @@ export class AuthService {
       where: { username: username.toLowerCase() },
       relations: ['rol', 'employee'],
     })
-    if (!user) throw new NotFoundException(`El usuario o la contraseña son incorrectos`);
+    if (!user) throw new AppError(`El usuario o la contraseña son incorrectos`, UNAUTHORIZED);
     const isPasswordValid = await comparePassword(password, user.password);
-    if (!isPasswordValid) throw new NotFoundException(`El usuario o la contraseña son incorrectos`);
+    if (!isPasswordValid) throw new AppError(`El usuario o la contraseña son incorrectos`, UNAUTHORIZED);
     //GENERAR EL TOKEN
     const access_token = JwtConfig.generateToken(user);
     const result = { access_token }
@@ -63,12 +67,12 @@ export class AuthService {
     await this.queryRunner.startTransaction();
     try {
       const existingEmail = await this.userRepository.findOne({ where: { email: data.email.toLowerCase() } });
-      if (existingEmail) throw new ConflictException(`El correo ${data.email} ya 
-      existe`);
+      if (existingEmail) throw new AppError(`El correo ${data.email} ya 
+      existe`, CONFLICT);
       const customerRole = await this.rolRepository.findOne({ where: { id: data.rol_id } })
-      if (!customerRole) throw new NotFoundException(`El rol customer no existe`);
+      if (!customerRole) throw new AppError(`El rol customer no existe`, NOT_FOUND);
       //VALIDAR SI EL TIPO DE USUARIO ES IGUAL AL ROL
-      if (customerRole.name !== UserType.CUSTOMER) throw new ConflictException(`El rol ${customerRole.name} no es un rol de cliente`);
+      if (customerRole.name !== UserType.CUSTOMER) throw new AppError(`El rol ${customerRole.name} no es un rol de cliente`, CONFLICT);
       //hashear la contraseña
       const hashedPassword = await hashPassword(data.password);
       const user = this.userRepository.create({
@@ -85,7 +89,7 @@ export class AuthService {
         name: data.name,
         last_name: data.last_name,
         phone: data.phone,
-        address: data.address,
+        dni: data.dni,
         user: userWthoutPassword,
       })
       //guardamos el cliente
@@ -134,27 +138,102 @@ export class AuthService {
     return result;
   }
   public async getProfile(id: string) {
-    const userBasic = await this.userRepository.findOne(
-      { where: { id }, relations: ['rol'] }
-    )
-    let relations = ['rol']
-    if (userBasic?.type === UserType.CUSTOMER) {
-      relations.push('customer')
+    // Verificar existencia y tipo
+    const userExist = await this.userRepository.findOne({
+      where: { id },
+      relations: ['rol'],
+      select: {
+        id: true,
+        email: true,
+        rol: {
+          id: true,
+          name: true
+        }
+      }
+    });
+    if (!userExist) throw new NotFoundException(`El usuario no fue encontrado.`);
+    if (!userExist.rol) throw new NotFoundException(`El rol del usuario no fue encontrado.`);
+
+    // Consulta específica según tipo
+    const roleName = userExist.rol.name.toLowerCase();
+    if (roleName === 'customer') {
+      return await this.userRepository.findOne({
+        where: { id },
+        relations: ['customer'],
+        select: {
+          id: true,
+          email: true,
+          customer: {
+            id: true,
+            name: true,
+            last_name: true,
+            phone: true,
+            address: true,
+            dni: true
+          }
+        }
+      });
+    } else {
+      return await this.userRepository.findOne({
+        where: { id },
+        relations: ['employee'],
+        select: {
+          id: true,
+          email: true,
+          rol: true,
+          employee: {
+            id: true,
+            name: true,
+            last_name: true,
+          }
+        }
+      })
     }
-    if (userBasic?.type === UserType.EMPLOYEE) {
-      relations.push('employee')
+
+  }
+  public async updateCustomerProfile(id: string, updateData: UpdateCustomerUserDTO) {
+    const customer = await this.customerRepository.findOne({
+      where: { user: { id } },
+    });
+    if (!customer) throw new AppError(`El usuario no fue encontrado.`, NOT_FOUND);
+    // verificar si el dni ya existe en otro usuario
+    if (updateData.dni && updateData.dni !== customer.dni) {
+      const existingCustomerWithDNI = await this.customerRepository.findOne({
+        where: { dni: updateData.dni, id: Not(customer.id) },
+      })
+      if (existingCustomerWithDNI) {
+        throw new AppError(`El DNI ${updateData.dni} ya está en uso por otro usuario.`, CONFLICT);
+      }
     }
-   
+    //OBJECT.ASSING() permite actualizar las propiedades del objeto customer con los datos de updateData
+    Object.assign(customer, updateData);
+    const updatedCustomer = await this.customerRepository.save(customer);
+    return updatedCustomer;
+  }
+  public async changePassword(id: string, changePasswordData: ChangePasswordDTO) {
+
+    // VERIFICAR SI EL USUARIO EXISTE
     const user = await this.userRepository.findOne({
       where: { id },
-      relations
+      select: ['id', 'password'],
     })
-    
-    const {
-      password,
-      ...userWithoutPassword } = user || {};
-    if (!user) throw new NotFoundException(`El usuario no fue encontrado.`);
+    if (!user) throw new AppError('El usuario no fue encontrado.', NOT_FOUND);
+    // VERIFICAR QUE LA CONTRASEÑA ACTUAL SEA LA CORRECTA
+    const isSameAsOldPassword = await comparePassword(changePasswordData.currentPassword, user.password)
+    if (!isSameAsOldPassword) throw new AppError('La contraseña actual es incorrecta.', CONFLICT);
 
-    return userWithoutPassword;
+    //verificar que la nueva contraseña y la confirmación de la nueva contraseña sean iguales
+    const isNewPasswordMatch = changePasswordData.newPassword === changePasswordData.confirmedPassword;
+    if (!isNewPasswordMatch) throw new AppError('La nueva contraseña y su confirmación no coinciden.', CONFLICT);
+    const isNewPasswordSameAsOld = await comparePassword(changePasswordData.newPassword, user.password);
+
+    if (isNewPasswordSameAsOld) throw new AppError('La nueva contraseña no puede ser igual a la contraseña actual.', CONFLICT);
+    //hashear la nueva contraseña
+    const hashedNewPassword = await hashPassword(changePasswordData.newPassword);
+    //actualizar la contraseña del usuario
+    user.password = hashedNewPassword;
+    //retornar el usuario actualizado sin la contraseña
+    return await this.userRepository.save(user);
+
   }
 }
