@@ -159,7 +159,7 @@ export class AuthService {
     if (roleName === 'customer') {
       return await this.userRepository.findOne({
         where: { id },
-        relations: ['customer'],
+        relations: ['customer', 'customer.address'],
         select: {
           id: true,
           email: true,
@@ -168,8 +168,12 @@ export class AuthService {
             name: true,
             last_name: true,
             phone: true,
-            address: true,
-            dni: true
+            dni: true,
+            address: {
+              id: true,
+              houseType: true,
+              address: true,
+            }
           }
         }
       });
@@ -185,6 +189,7 @@ export class AuthService {
             id: true,
             name: true,
             last_name: true,
+            
           }
         }
       })
