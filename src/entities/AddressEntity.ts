@@ -1,7 +1,7 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { CustomerEntity } from "./CustomerEntity";
 
-export enum houseType {
+export enum HouseType {
   HOME = "home",
   WORK = "work",
   OTHER = "other",
@@ -11,10 +11,11 @@ export enum houseType {
 export class AddressEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
-  @Column({ type:"enum", enum: houseType})
-  houseType: string;
+  @Column({ type: "enum", enum: HouseType })
+  houseType: HouseType;
   @Column({ type: "varchar", length: 200, nullable: true })
   address: string;
   @ManyToOne(() => CustomerEntity, (customer) => customer.address)
+  @JoinColumn({ name: "customer_id" })
   customer: CustomerEntity;
 }
