@@ -5,7 +5,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { corsConfig } from './config/cors.config';
-import { errorHandler } from './middlewares/errorHandler';
+import { errorHandler } from './middlewares/error-handler.middleware';
 import { logger } from './utils/logger';
 
 dotenv.config();

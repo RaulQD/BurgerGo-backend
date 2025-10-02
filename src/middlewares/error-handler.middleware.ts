@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
-import { HttpException } from "../errors/custom.error";
-import { AppError } from "../utils/AppError";
+import { AppError } from "../utils/app-error-utils";
 import { INTERNAL_SERVER_ERROR } from "../constants/http";
 import { logger } from "../utils/logger";
 
@@ -13,7 +12,7 @@ const handlerAppError = (res: Response, error: AppError) => {
 }
 
 //Nota el tipo ErrorRequestHandler y el export default
-export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
+export const errorHandler: ErrorRequestHandler = (error, _req: Request, res, _next: NextFunction) => {
   if (error instanceof AppError) {
     handlerAppError(res, error);
     return;

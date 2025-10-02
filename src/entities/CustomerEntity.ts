@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { UserEntity } from "./UserEntity";
 import { AddressEntity } from "./AddressEntity";
+import { UserEntity } from "./UserEntity";
 
 @Entity({ name: "customers" })
 export class CustomerEntity{

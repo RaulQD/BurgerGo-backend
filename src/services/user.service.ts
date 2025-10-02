@@ -8,7 +8,7 @@ import { AppDataBaseSources } from "../config/data.sources";
 import { ConflictException, NotFoundException } from "../errors/custom.error";
 import { RolEntity } from "../entities/RolEntity";
 import { CustomerEntity } from "../entities/CustomerEntity";
-import { EmployeeEntity } from "../entities/EmployeeEntity";
+import { EmployeeEntity } from "../entities";
 
 
 export class UserService {

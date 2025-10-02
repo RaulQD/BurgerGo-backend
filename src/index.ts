@@ -17,6 +17,7 @@ async function main() {
     logger.info(`=========== DB Name: ${process.env.DB_NAME} =========`);
     server.listen(Number(PORT));
   }).catch((error) => {
+    console.log(error)
     logger.error('Error during Data Source initialization:', error);
   });
 }
