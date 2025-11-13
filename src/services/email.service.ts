@@ -5,16 +5,17 @@ import {
   getWelcomeEmailTemplate,
 } from '../shared/templates/notification-email.template';
 import dotenv from 'dotenv';
+import { logger } from '../utils';
 dotenv.config();
 
 export class EmailService {
   private transporter: nodemailer.Transporter;
   constructor() {
-    console.log('🔧 Configurando EmailService...');
-    console.log('📧 user:', process.env.MAILER_USER);
-    console.log('🔑 Password existe:', !!process.env.MAILER_PASSWORD);
-    console.log('📨 Servicio:', process.env.MAILER_SERVICE);
-    console.log('🚪 Puerto:', process.env.MAILER_PORT);
+    logger.info('🔧 Configurando EmailService...');
+    logger.info('📧 user:', process.env.MAILER_USER);
+    logger.info('🔑 Password existe:', !!process.env.MAILER_PASSWORD);
+    logger.info('📨 Servicio:', process.env.MAILER_SERVICE);
+    logger.info('🚪 Puerto:', process.env.MAILER_PORT);
 
     this.transporter = nodemailer.createTransport({
       host: process.env.MAILER_SERVICE,
@@ -28,11 +29,10 @@ export class EmailService {
     });
   }
   async sendVerificationEmail(user: UserEntity, verificationCode: string) {
-    const verificationUrl = `${process.env.FRONTEND_URL}/account/confirmed-account`;
+    const nameComplete = user.customer.name + ' ' + user.customer.last_name[0];
     const verificationEmailParams = {
-      name: user.customer.name,
+      nameComplete,
       verificationCode,
-      verificationUrl,
     };
 
     const mailOptions = {
@@ -43,7 +43,7 @@ export class EmailService {
     };
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`Verification email sent to ${user.email}`);
+      logger.info(`Verification email sent to ${user.email}`);
     } catch (error) {
       console.error(
         `Error sending verification email to ${user.email}:`,
@@ -61,7 +61,7 @@ export class EmailService {
     };
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`Welcome email sent to ${user.email}`);
+      logger.info(`Welcome email sent to ${user.email}`);
     } catch (error) {
       console.error(`Error sending welcome email to ${user.email}:`, error);
       throw new Error('Error sending welcome email');

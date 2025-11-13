@@ -1,15 +1,13 @@
 interface VerificationEmailTemplateParams {
-    name: string;
-    verificationCode: string;
-    verificationUrl: string;
+  nameComplete: string;
+  verificationCode: string;
 }
 
 export const getVerificationEmailTemplate = ({
-    name,
-    verificationCode,
-    verificationUrl,
+  nameComplete,
+  verificationCode,
 }: VerificationEmailTemplateParams): string => {
-    return `
+  return `
       <!DOCTYPE html>
       <html>
       <head>
@@ -17,10 +15,15 @@ export const getVerificationEmailTemplate = ({
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Verifica tu cuenta</title>
         <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          body { font-family: Poppins, sans-serif; line-height: 1.6; color: #333;}
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: #ff6b35; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+          .header-flex { display: flex; flex-direction: column; align-items: center; justify-content: center; }
           .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .content-flex { display: flex; flex-direction: column; align-items: center; justify-content: center}
+          .content-bg {background: #FFFFFF; padding:30px; border-radius: 10px }
+          .content-p { margin-top: 0px; margin-bottom: 10px; font-size: 30px; }
+          .content-text { text-align: center; font-size:14px}
           .button { display: inline-block; background: #ff6b35; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
           .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
         </style>
@@ -28,24 +31,22 @@ export const getVerificationEmailTemplate = ({
       <body>
         <div class="container">
           <div class="header">
-            <h1>🍔 Fast Burger</h1>
-            <p>¡Verifica tu cuenta!</p>
+            <div class="header-flex">
+            <h1> Fast Burger</h1>
+            <p>Verifica tu cuenta con tu código de seguridad</p>
+            </div>
           </div>
           <div class="content">
-            <h2>¡Hola ${name}!</h2>
+            <h2>¡Hola ${nameComplete}!</h2>
             <p>Gracias por registrarte en Fast Burger. Para completar tu registro y empezar a disfrutar de nuestras deliciosas hamburguesas, necesitas verificar tu dirección de correo electrónico.</p>
-            <p>Tienes que ingresar este código:${verificationCode}</p>
-            <p>Haz clic en el siguiente botón para verificar tu cuenta:</p>
-            
-            <a href="${verificationUrl}" class="button">Verificar mi cuenta</a>
-            
-            <p>Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:</p>
-            <p style="word-break: break-all; color: #666;">${verificationUrl}</p>
-            
-            <p><strong>Importante:</strong> Este enlace expirará en 24 horas por seguridad.</p>
-            
+            <div class="content-bg">
+              <div class="content-flex">
+                <p class="content-p">¡No compartas este código!</p>
+                <p class="content-p">${verificationCode}</p>
+              </div>
+              <p class="content-text">Ten en cuenta que este código vence en 10 minutos.</p>
+            </div>
             <p>Si no creaste esta cuenta, puedes ignorar este email.</p>
-            
             <p>¡Esperamos verte pronto!<br>
             El equipo de Fast Burger</p>
           </div>
@@ -60,7 +61,7 @@ export const getVerificationEmailTemplate = ({
 };
 
 export const getWelcomeEmailTemplate = (name: string): string => {
-    return `
+  return `
       <!DOCTYPE html>
       <html>
       <head>

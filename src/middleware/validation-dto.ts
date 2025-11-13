@@ -1,7 +1,6 @@
-import { ClassConstructor, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
 import { Request, Response, NextFunction } from 'express';
-import { skip } from 'node:test';
 import { logger } from '../utils/logger';
 
 export function validateMiddlewareDTO(type: any) {
@@ -11,7 +10,7 @@ export function validateMiddlewareDTO(type: any) {
     next: NextFunction,
   ): Promise<void> => {
     const dtoObject = plainToInstance(type, req.body);
-    const errors = await validate(dtoObject as any, {
+    const errors = await validate(dtoObject as unknown[], {
       skipMissingProperties: false,
     });
     if (errors.length > 0) {

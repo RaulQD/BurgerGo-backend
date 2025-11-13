@@ -1,16 +1,18 @@
-import { HttpException } from "../errors/custom.error";
-import { HttpResponse } from "../shared/http-response";
+import { Response } from 'express';
+import { HttpException } from '../errors/custom.error';
+import { HttpResponse } from '../shared/http-response';
 
 export class BaseController {
   protected readonly httpResponse = new HttpResponse();
-  protected handleError(error: any, res: any) {
+  protected handleError(error: unknown, res: Response) {
     if (error instanceof HttpException) {
-      return res.status().json({
+      return res.status(error.status).json({
         message: error.message,
       });
     }
-    console.log(error);
-    return this.httpResponse.INTERNAL_SERVER_ERROR(res, "Error interno del servidor");
+    return this.httpResponse.INTERNAL_SERVER_ERROR(
+      res,
+      'Error interno del servidor',
+    );
   }
-
 }

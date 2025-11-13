@@ -1,4 +1,3 @@
-
 export const OK = 200;
 export const CREATED = 201;
 export const BAD_REQUEST = 400;
@@ -10,7 +9,7 @@ export const UNPROCESSABLE_CONTENT = 422;
 export const TOO_MANY_REQUESTS = 429;
 export const INTERNAL_SERVER_ERROR = 500;
 
-export type HttpStatusCode = 
+export type HttpStatusCode =
   | typeof OK
   | typeof CREATED
   | typeof BAD_REQUEST
@@ -21,4 +20,3 @@ export type HttpStatusCode =
   | typeof UNPROCESSABLE_CONTENT
   | typeof TOO_MANY_REQUESTS
   | typeof INTERNAL_SERVER_ERROR;
-  

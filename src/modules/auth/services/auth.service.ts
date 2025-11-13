@@ -1,4 +1,4 @@
-import { Not, QueryRunner, Repository } from 'typeorm';
+import { Not, QueryRunner } from 'typeorm';
 import { UserEntity } from '../../../entities/UserEntity';
 import { AppDataBaseSources } from '../../../config/data.sources';
 import { RolEntity } from '../../../entities/RolEntity';
@@ -9,7 +9,6 @@ import {
   LoginRequestDTO,
   UpdateCustomerUserDTO,
 } from '../dto';
-import { JwtConfig } from '../../../config/jwt.config';
 import { NotFoundException } from '../../../errors/custom.error';
 import { EmailVerificationEntity } from '../../../entities/EmailVerificationEntity';
 import { AppError, comparePassword, hashPassword } from '../../../utils';
@@ -19,24 +18,18 @@ import {
   NOT_FOUND,
   UNAUTHORIZED,
 } from '../../../constants/http';
-import { generate6DigitToken } from '../../../utils/token';
-import { EmailService } from '../../../services/email.service';
 import { sanitizerUser } from '../../../utils/sanitizer';
 import { AuthResponseBuilder } from '../../../utils/auth-response-builder';
+import { TokenEmailService } from '../../../services/token.service';
 
 export class AuthService {
-  private userRepository: Repository<UserEntity>;
-  private rolRepository: Repository<RolEntity>;
-  private customerRepository: Repository<CustomerEntity>;
-  private emailNotificationRepository: Repository<EmailVerificationEntity>;
-  constructor() {
-    this.userRepository = AppDataBaseSources.getRepository(UserEntity);
-    this.rolRepository = AppDataBaseSources.getRepository(RolEntity);
-    this.customerRepository = AppDataBaseSources.getRepository(CustomerEntity);
-    this.emailNotificationRepository = AppDataBaseSources.getRepository(
-      EmailVerificationEntity,
-    );
-  }
+  private userRepository = AppDataBaseSources.getRepository(UserEntity);
+  private rolRepository = AppDataBaseSources.getRepository(RolEntity);
+  private customerRepository = AppDataBaseSources.getRepository(CustomerEntity);
+  private emailNotificationRepository = AppDataBaseSources.getRepository(
+    EmailVerificationEntity,
+  );
+  private tokenEmailService = new TokenEmailService();
 
   public async login(loginData: LoginRequestDTO) {
     let user: UserEntity | null = null;
@@ -244,55 +237,45 @@ export class AuthService {
     try {
       await queryRunner.connect();
       await queryRunner.startTransaction();
-      // Obtener el rol de cliente
+
       const role = await queryRunner.manager.findOne(RolEntity, {
         where: { id: data.rol_id },
       });
-      // Hashear la contraseña
+
       const hashedPassword = await hashPassword(data.password);
 
-      // Crear el usuario
       const user = new UserEntity();
       user.email = data.email.toLowerCase();
-      user.username = null; // No se usa username para clientes
+      user.username = null;
       user.password = hashedPassword;
       user.email_verified = false;
       user.rol = role!;
-      // Guardar el usuario
+
       const savedUser = await queryRunner.manager.save(user);
-      // Crear el cliente
+
       const customer = new CustomerEntity();
       customer.name = data.name;
       customer.last_name = data.last_name;
       customer.phone = data.phone;
       customer.dni = data.dni;
       customer.user = savedUser;
-      // Crear el cliente
+
       const saveCustomer = await queryRunner.manager.save(customer);
       savedUser.customer = saveCustomer;
 
-      //Generar el token de verificación
-      const verificationToken = generate6DigitToken();
-      const expiredDate = new Date();
-      // establecer la fecha de expiración del token en 10 minutos
-      expiredDate.setMinutes(expiredDate.getMinutes() + 10);
-
-      //crear la entidad de verificación de email
-      const emailVerification = new EmailVerificationEntity();
-      emailVerification.verificationToken = verificationToken;
-      emailVerification.expired_at = expiredDate;
-      emailVerification.user = savedUser;
-      // Guardar la verificación de email
-      await queryRunner.manager.save(
-        EmailVerificationEntity,
-        emailVerification,
-      );
-      // Enviar el email de verificación
-      const emailService = new EmailService();
-      await emailService.sendVerificationEmail(savedUser, verificationToken);
-
       await queryRunner.commitTransaction();
-      return sanitizerUser(savedUser);
+
+      const verificationData =
+        await this.tokenEmailService.createEmailVerificationToken(savedUser.id);
+
+      const response = {
+        user: sanitizerUser(savedUser),
+        verification_session_token: verificationData.verification_session_token,
+        expires_in: verificationData.expires_in,
+        cooldown_seconds: verificationData.cooldown_seconds,
+      };
+
+      return response;
     } catch (error: unknown) {
       if (queryRunner.isTransactionActive) {
         await queryRunner.rollbackTransaction();
@@ -311,5 +294,4 @@ export class AuthService {
       await queryRunner.release();
     }
   }
-
 }

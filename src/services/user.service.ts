@@ -1,18 +1,16 @@
 // import { AppDataBaseSources } from "../config/data.sources";
 // import { UserRepository } from "../repositories/UserRepository";
 
-import { Repository } from "typeorm";
+import { Repository } from 'typeorm';
 // import { CreateUserDTO } from "../dtos/customer-user/createUser.dto";
-import { UserEntity, UserType } from "../entities/UserEntity";
-import { AppDataBaseSources } from "../config/data.sources";
-import { ConflictException, NotFoundException } from "../errors/custom.error";
-import { RolEntity } from "../entities/RolEntity";
-import { CustomerEntity } from "../entities/CustomerEntity";
-import { EmployeeEntity } from "../entities";
-
+import { UserEntity, UserType } from '../entities/UserEntity';
+import { AppDataBaseSources } from '../config/data.sources';
+import { NotFoundException } from '../errors/custom.error';
+import { RolEntity } from '../entities/RolEntity';
+import { CustomerEntity } from '../entities/CustomerEntity';
+import { EmployeeEntity } from '../entities';
 
 export class UserService {
-
   private userRepository: Repository<UserEntity>;
   private rolRepository: Repository<RolEntity>;
   private customerRepository: Repository<CustomerEntity>;
@@ -32,9 +30,16 @@ export class UserService {
     return [];
   }
   private async findUserWithRelations(id: string) {
-    const queryBuilder = this.userRepository.createQueryBuilder('user').where('user.id = :id', { id });
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .where('user.id = :id', { id });
     // Agregar relaciones según el tipo de usuario
-    queryBuilder.leftJoinAndSelect('user.customer', 'customer', 'user.type = :customerType', { customerType: UserType.CUSTOMER })
+    queryBuilder.leftJoinAndSelect(
+      'user.customer',
+      'customer',
+      'user.type = :customerType',
+      { customerType: UserType.CUSTOMER },
+    );
 
     const user = await queryBuilder.getOne();
     if (!user) {
@@ -44,7 +49,6 @@ export class UserService {
   }
   // Método para obtener un usuario por ID
   async getUserById(id: string) {
-
     return await this.findUserWithRelations(id);
   }
 
@@ -62,8 +66,8 @@ export class UserService {
     const user = {
       id,
       name: 'Usuario de prueba',
-      email: 'usuario@usuario.com'
-    }
+      email: 'usuario@usuario.com',
+    };
     return user;
   }
 }

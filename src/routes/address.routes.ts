@@ -1,6 +1,6 @@
-import { Router } from "express";
-import { AddressController } from "../controllers/address.controller";
-import { verifyToken } from "../middlewares/auth-token.middleware";
+import { Router } from 'express';
+import { AddressController } from '../controllers/address.controller';
+import { verifyToken } from '../middleware/auth-token.middleware';
 
 export class AddressRoutes {
   static get routes(): Router {
