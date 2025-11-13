@@ -1,12 +1,11 @@
-
 import express, { Application, Router } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { corsConfig } from './config/cors.config';
-import { errorHandler } from './middlewares/error-handler.middleware';
 import { logger } from './utils/logger';
+import { errorHandler } from './middleware/error-handler.middleware';
 
 dotenv.config();
 interface Options {
@@ -31,12 +30,12 @@ export class Server {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(morgan('dev'));
-    this.app.use(cookieParser())
+    this.app.use(cookieParser());
   }
   private initializeRoutes() {
     this.app.use(this.routes);
   }
-  private initializeErrorHandler() { 
+  private initializeErrorHandler() {
     this.app.use(errorHandler);
   }
   public listen(port: number) {

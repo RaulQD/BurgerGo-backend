@@ -1,18 +1,20 @@
-import { QueryRunner } from "typeorm";
-import { CreateEmployeeDTO } from "../dtos";
-import { UserEntity, UserType } from "../../../entities/UserEntity";
-import { AppDataBaseSources } from "../../../config/data.sources";
-import { RolEntity } from "../../../entities/RolEntity";
-import { AppError, hashPassword } from "../../../utils";
-import { BAD_REQUEST, CONFLICT, INTERNAL_SERVER_ERROR } from "../../../constants/http";
-import { EmployeeEntity } from "../../../entities";
-
+import { QueryRunner } from 'typeorm';
+import { CreateEmployeeDTO } from '../dtos';
+import { UserEntity, UserType } from '../../../entities/UserEntity';
+import { AppDataBaseSources } from '../../../config/data.sources';
+import { RolEntity } from '../../../entities/RolEntity';
+import { AppError, hashPassword } from '../../../utils';
+import {
+  BAD_REQUEST,
+  CONFLICT,
+  INTERNAL_SERVER_ERROR,
+} from '../../../constants/http';
+import { EmployeeEntity } from '../../../entities';
 
 export class EmployeeService {
   private userRepository = AppDataBaseSources.getRepository(UserEntity);
   private rolRepository = AppDataBaseSources.getRepository(RolEntity);
   private employeeRepository = AppDataBaseSources.getRepository(EmployeeEntity);
-
 
   constructor() {
     this.userRepository = AppDataBaseSources.getRepository(UserEntity);
@@ -25,34 +27,35 @@ export class EmployeeService {
     await this.validateEmployeeData(data);
     // 2. Operaciones de base de datos CON transacción
     return await this.createEmployeeWithTransaction(data);
-  
   }
 
   private async validateEmployeeData(data: CreateEmployeeDTO) {
     // Validar email y username
     const existingUser = await this.userRepository.findOne({
-      where: [
-        { email: data.email },
-        { username: data.username }
-      ],
+      where: [{ email: data.email }, { username: data.username }],
     });
 
-    if (existingUser) throw new AppError("El email o el nombre de usuario ya están en uso", CONFLICT);
+    if (existingUser)
+      throw new AppError(
+        'El email o el nombre de usuario ya están en uso',
+        CONFLICT,
+      );
 
     // Validar que el rol existe
     const existingRole = await this.rolRepository.findOne({
-      where: { id: data.rol_id }
+      where: { id: data.rol_id },
     });
 
-    if (!existingRole) throw new AppError("El rol especificado no existe", BAD_REQUEST);
+    if (!existingRole)
+      throw new AppError('El rol especificado no existe', BAD_REQUEST);
 
     // Validar DNI
     const existingEmployeeWithDNI = await this.employeeRepository.findOne({
-      where: { dni: data.dni }
+      where: { dni: data.dni },
     });
 
-    if (existingEmployeeWithDNI) throw new AppError(`El DNI ${data.dni} ya existe`, CONFLICT);
-
+    if (existingEmployeeWithDNI)
+      throw new AppError(`El DNI ${data.dni} ya existe`, CONFLICT);
 
     return existingRole; // Retornamos el rol para usarlo después
   }
@@ -63,7 +66,7 @@ export class EmployeeService {
       await queryRunner.startTransaction();
       // Obtener el rol (ya validado anteriormente)
       const role = await queryRunner.manager.findOne(RolEntity, {
-        where: { id: data.rol_id }
+        where: { id: data.rol_id },
       });
       // Hashear la contraseña
       const hashedPassword = await hashPassword(data.password);
@@ -73,10 +76,13 @@ export class EmployeeService {
         username: data.username,
         password: hashedPassword,
         type: UserType.EMPLOYEE,
-        rol: role!
-      })
+        rol: role!,
+      });
       // Guardar el usuario
-      const { password, ...savedUser } = await queryRunner.manager.save(UserEntity, user);
+      const { password, ...savedUser } = await queryRunner.manager.save(
+        UserEntity,
+        user,
+      );
       // Crear el empleado
       const employee = queryRunner.manager.create(EmployeeEntity, {
         name: data.name,
@@ -90,11 +96,14 @@ export class EmployeeService {
       const result = await queryRunner.manager.save(EmployeeEntity, employee);
       // Confirmar la transacción
       await queryRunner.commitTransaction();
-      return { id: result.id }
+      return { id: result.id };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      console.error("Error en transacción:", error);
-      throw new AppError("Error al crear el empleado en la base de datos", INTERNAL_SERVER_ERROR);
+      console.error('Error en transacción:', error);
+      throw new AppError(
+        'Error al crear el empleado en la base de datos',
+        INTERNAL_SERVER_ERROR,
+      );
     } finally {
       await queryRunner.release();
     }

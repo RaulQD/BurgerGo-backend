@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { CREATED, OK } from '../../../constants/http';
-import { catchError } from '../../../utils';
+import { CREATED, OK, UNAUTHORIZED } from '../../../constants/http';
+import { AppError, catchError } from '../../../utils';
 import { VerifyTokenDto } from '../../../dtos/emailVerification/verify-email.dto';
 import { TokenEmailService } from '../../../services/token.service';
 import { AuthService } from '../services/auth.service';
@@ -41,9 +41,13 @@ export class AuthController {
       const data = await this.authService.registerCustomerUser(userData);
       return res.status(CREATED).json({
         message:
-          'Cuenta creada exitosamente. Por favor verifica tu email antes de continuar.',
-        data,
-        email_sent: true,
+          'Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.',
+        data: {
+          user: data.user,
+          verification_session_token: data.verification_session_token,
+          expires_in: data.expires_in,
+          cooldown_seconds: data.cooldown_seconds,
+        },
       });
     },
   );
@@ -83,7 +87,11 @@ export class AuthController {
   public confirmAccount = catchError(
     async (req: Request<{}, {}, VerifyTokenDto>, res: Response) => {
       const { token } = req.body;
-      const { user, access_token } = await this.tokenService.verifyToken(token);
+      const { userId } = req.verificationSession!;
+      const { user, access_token } = await this.tokenService.verifyToken(
+        token,
+        userId,
+      );
       return res.status(OK).json({
         message: 'Cuenta verificada correctamente. Ya puedes iniciar sesión.',
         user,
@@ -94,11 +102,15 @@ export class AuthController {
   public resendVerificationEmail = catchError(
     async (req: Request, res: Response) => {
       const { email } = req.body;
-      await this.tokenService.resendVerificationToken(email);
-      return res.status(OK).json({
-        message:
-          'Correo de verificación reenviado. Por favor revisa tu bandeja de entrada.',
-      });
+      const response = await this.tokenService.resendVerificationToken(email);
+      return res.status(OK).json(response);
     },
   );
+  public resendCode = catchError(async (req: Request, res: Response) => {
+    if (!req.verificationSession?.userId)
+      throw new AppError('Sesión de verificación invalida.', UNAUTHORIZED);
+    const { userId } = req.verificationSession;
+    const response = await this.tokenService.resendVerificationTokenV2(userId);
+    return res.status(OK).json(response);
+  });
 }

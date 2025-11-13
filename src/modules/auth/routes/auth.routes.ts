@@ -1,17 +1,15 @@
 import { Router } from 'express';
 import { AuthController } from '../controller/auth.controller';
-import { verifyToken } from '../../../middlewares/auth-token.middleware';
-import { validateMiddlewareDTO } from '../../../middlewares/validation-dto';
 import {
   ChangePasswordDTO,
   CreateCustomerDTO,
   LoginRequestDTO,
   UpdateCustomerUserDTO,
 } from '../dto';
-import {
-  ResendVerificationDto,
-  VerifyTokenDto,
-} from '../../../dtos/emailVerification/verify-email.dto';
+import { VerifyTokenDto } from '../../../dtos/emailVerification/verify-email.dto';
+import { verifyToken } from '../../../middleware/auth-token.middleware';
+import { validateMiddlewareDTO } from '../../../middleware/validation-dto';
+import { verificationSessionMiddleware } from '../../../middleware/verification-session-token.middleware';
 
 export class AuthRoutes {
   static get routes(): Router {
@@ -42,14 +40,15 @@ export class AuthRoutes {
       authController.changePassword,
     );
     router.post(
-      '/confirm-account',
+      '/verify-account',
       validateMiddlewareDTO(VerifyTokenDto),
+      verificationSessionMiddleware,
       authController.confirmAccount,
     );
     router.post(
-      '/resend-verification',
-      validateMiddlewareDTO(ResendVerificationDto),
-      authController.resendVerificationEmail,
+      '/resend-code',
+      verificationSessionMiddleware,
+      authController.resendCode,
     );
 
     return router;

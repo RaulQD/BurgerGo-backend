@@ -1,4 +1,3 @@
-
 export class HttpException extends Error {
   public status: number;
   constructor(message: string) {
@@ -6,7 +5,6 @@ export class HttpException extends Error {
 
     this.message = message;
   }
-
 }
 export class ConflictException extends HttpException {
   constructor(message: string) {
