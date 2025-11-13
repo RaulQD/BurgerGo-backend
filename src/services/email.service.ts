@@ -45,10 +45,7 @@ export class EmailService {
       await this.transporter.sendMail(mailOptions);
       logger.info(`Verification email sent to ${user.email}`);
     } catch (error) {
-      console.error(
-        `Error sending verification email to ${user.email}:`,
-        error,
-      );
+      logger.error(`Error sending verification email to ${user.email}:`, error);
       throw new Error('Error sending verification email');
     }
   }
@@ -63,7 +60,7 @@ export class EmailService {
       await this.transporter.sendMail(mailOptions);
       logger.info(`Welcome email sent to ${user.email}`);
     } catch (error) {
-      console.error(`Error sending welcome email to ${user.email}:`, error);
+      logger.error(`Error sending welcome email to ${user.email}:`, error);
       throw new Error('Error sending welcome email');
     }
   }

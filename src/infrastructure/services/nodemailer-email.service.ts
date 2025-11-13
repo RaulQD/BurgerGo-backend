@@ -26,7 +26,6 @@ export class NodemailerEmailService implements IEmailService {
     verificationCode: string,
   ): Promise<void> {
     const nameComplete = name.split(' ')[0];
-    console.info(nameComplete);
     const verificationEmailParams = {
       nameComplete,
       verificationCode,
@@ -41,7 +40,7 @@ export class NodemailerEmailService implements IEmailService {
       await this.transporter.sendMail(mailOptions);
       logger.info(`Verification email sent to ${to}`);
     } catch (error) {
-      console.error(`Error sending verification email to ${to}`, error);
+      logger.error(`Error sending verification email to ${to}`, error);
       throw new Error('ERror sending verification email');
     }
   }
@@ -56,7 +55,7 @@ export class NodemailerEmailService implements IEmailService {
       await this.transporter.sendMail(mailOptions);
       logger.info(`Welcome email sent to ${to}`);
     } catch (error) {
-      console.error(`Error sending welcome email to ${to}`, error);
+      logger.error(`Error sending welcome email to ${to}`, error);
       throw new Error('Error sending welcome email');
     }
   }

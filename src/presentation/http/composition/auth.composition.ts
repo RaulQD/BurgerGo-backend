@@ -49,13 +49,6 @@ export const composeAuthController = (dataSource: DataSource) => {
     emailService,
     tokenService,
   );
-  console.info('🔍 [DEBUG] Composition - Creating VerifyEmailAccountUseCase');
-  console.info('🔍 [DEBUG] Composition - userRepository:', userRepository);
-  console.info(
-    '🔍 [DEBUG] Composition - emailVerificationRepository:',
-    emailVerificationRepository,
-  );
-  console.info('🔍 [DEBUG] Composition - tokenService:', tokenService);
 
   const verifyEmailAccount = new VerifyEmailAccountUseCase(
     userRepository,

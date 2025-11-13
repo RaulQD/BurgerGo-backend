@@ -3,7 +3,7 @@ import { CreateEmployeeDTO } from '../dtos';
 import { UserEntity, UserType } from '../../../entities/UserEntity';
 import { AppDataBaseSources } from '../../../config/data.sources';
 import { RolEntity } from '../../../entities/RolEntity';
-import { AppError, hashPassword } from '../../../utils';
+import { AppError, hashPassword, logger } from '../../../utils';
 import {
   BAD_REQUEST,
   CONFLICT,
@@ -99,7 +99,7 @@ export class EmployeeService {
       return { id: result.id };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      console.error('Error en transacción:', error);
+      logger.error('Error en transacción:', error);
       throw new AppError(
         'Error al crear el empleado en la base de datos',
         INTERNAL_SERVER_ERROR,

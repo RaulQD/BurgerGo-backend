@@ -12,7 +12,7 @@ import { IRolRepository } from '../../domain/repository/rol.repository.interface
 import { IEmailService } from '../../domain/services/email.services.interface';
 import { IPasswordHasher } from '../../domain/services/password-hasher.interface';
 import { ITokenService } from '../../domain/services/token.service.interface';
-import { AppError } from '../../utils';
+import { AppError, logger } from '../../utils';
 import { ValidationError } from '../../domain/errors/validation.error';
 
 export interface RegisterCustomer {
@@ -136,7 +136,7 @@ export class RegisterCustomerUseCase {
       } catch (emailError) {
         // Si falla el email, no revertimos la transacción ya confirmada
         // pero podríamos loguear el error
-        console.error('Error sending verification email:', emailError);
+        logger.error('Error sending verification email:', emailError);
         // La cuenta se creó correctamente, solo falló el envío del email
       }
 
@@ -161,10 +161,11 @@ export class RegisterCustomerUseCase {
       // Revertir transacción en caso de error
       await unitOfWork.rollback();
 
-      console.error('❌ ERROR DETALLADO:', error);
-      console.error(
+      logger.error('❌ ERROR DETALLADO:', error);
+
+      logger.error(
         'Error stack:',
-        error instanceof Error ? error.stack : 'No stack',
+        error instanceof Error ? error.stack : ' NO Stack',
       );
 
       // Dejar pasar errores de validación de dominio
