@@ -1,10 +1,12 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from './user.typeorm-entity';
 import { AddressEntity } from './address.typeorm-entity';
@@ -22,12 +24,16 @@ export class CustomerEntity {
   @Column({ type: 'varchar', length: 200 })
   phone: string;
   @Column({ type: 'date', nullable: true })
-  birthday: Date | null;
+  birthdate: Date | null;
+  @CreateDateColumn({ name: 'created_at', select: false })
+  createdAt: Date;
+  @UpdateDateColumn({ name: 'updated_at', select: false })
+  updatedAt: Date;
   @OneToOne(() => UserEntity, (user) => user.customer)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
   @OneToMany(() => AddressEntity, (address) => address.customer, {
-    cascade: true,
+    cascade: false,
   })
   address: AddressEntity[];
 }

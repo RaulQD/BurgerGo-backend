@@ -1,11 +1,11 @@
 interface VerificationEmailTemplateParams {
   nameComplete: string;
-  verificationCode: string;
+  verificationUrl: string;
 }
 
 export const getVerificationEmailTemplate = ({
   nameComplete,
-  verificationCode,
+  verificationUrl,
 }: VerificationEmailTemplateParams): string => {
   return `
       <!DOCTYPE html>
@@ -41,10 +41,10 @@ export const getVerificationEmailTemplate = ({
             <p>Gracias por registrarte en Fast Burger. Para completar tu registro y empezar a disfrutar de nuestras deliciosas hamburguesas, necesitas verificar tu dirección de correo electrónico.</p>
             <div class="content-bg">
               <div class="content-flex">
-                <p class="content-p">¡No compartas este código!</p>
-                <p class="content-p">${verificationCode}</p>
+                <p class="content-p">¡Verifica tu cuenta!</p>
+                <a href="${verificationUrl}" class="button">Verificar cuenta</a>
               </div>
-              <p class="content-text">Ten en cuenta que este código vence en 10 minutos.</p>
+              <p class="content-text">Ten en cuenta que este enlace vence en 24 horas.</p>
             </div>
             <p>Si no creaste esta cuenta, puedes ignorar este email.</p>
             <p>¡Esperamos verte pronto!<br>

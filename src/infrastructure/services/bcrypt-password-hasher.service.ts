@@ -1,4 +1,4 @@
-import { IPasswordHasher } from '../../domain/services/password-hasher.interface';
+import { IPasswordHasher } from '../../domain/interfaces/password-hasher.interface';
 import bcrypt from 'bcryptjs';
 
 export class BcryptPasswordHasher implements IPasswordHasher {

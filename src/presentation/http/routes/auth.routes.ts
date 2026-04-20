@@ -1,19 +1,16 @@
 import { Router } from 'express';
 import { AuthController } from '../controller/auth.controller';
 import { LoginRequestDTO } from '../../../application/dtos/auth/request/login-request.dto';
-import { CreateCustomerDTO } from '../../../application/dtos/customer-user/request/create-customer-user.dto';
 import { createVerificationSessionMiddleware } from '../middlewares/auth/verification-session-token.middleware';
-import { VerifyTokenDto } from '../../../application/dtos/email/verify-email.dto';
+import { verifyToken } from '../middlewares/auth/auth-token.middleware';
+import {
+  ResendVerificationDto,
+  VerifyTokenDto,
+} from '../../../application/dtos/email/verify-email.dto';
 import { validateMiddlewareDTO } from '../middlewares/validation/validation-dto';
-import { ITokenService } from '../../../domain/services/token.service.interface';
 
-export const AuthRoutes = (
-  authController: AuthController,
-  tokenServices: ITokenService,
-): Router => {
+export const AuthRoutes = (authController: AuthController): Router => {
   const router = Router();
-  const validateSessionTokenMiddleware =
-    createVerificationSessionMiddleware(tokenServices);
 
   router.post(
     '/signin',
@@ -21,15 +18,14 @@ export const AuthRoutes = (
     authController.login,
   );
   router.post(
-    '/signup',
-    validateMiddlewareDTO(CreateCustomerDTO),
-    authController.createCustomer,
-  );
-  router.post(
     '/verify-account',
-    validateSessionTokenMiddleware,
     validateMiddlewareDTO(VerifyTokenDto),
     authController.verifyEmailAccount,
+  );
+  router.post(
+    '/resend-code',
+    validateMiddlewareDTO(ResendVerificationDto),
+    authController.resendVerificationCode,
   );
   return router;
 };

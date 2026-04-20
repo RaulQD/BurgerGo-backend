@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export class UpdateCustomerUserDTO {
   @IsNotEmpty({ message: 'El nombre es requerido' })
@@ -15,11 +21,6 @@ export class UpdateCustomerUserDTO {
   })
   last_name: string;
 
-  // @IsNotEmpty({ message: 'La dirección es requerida' })
-  // @IsString({ message: 'La dirección debe ser un texto' })
-  // @Length(5, 255, { message: 'La dirección debe tener entre 5 y 255 caracteres' })
-  // address: string;
-
   @IsNotEmpty({ message: 'El teléfono es requerido' })
   @IsString({ message: 'El teléfono debe ser un texto' })
   @Matches(/^[0-9]{9}$/, {
@@ -33,4 +34,8 @@ export class UpdateCustomerUserDTO {
     message: 'El DNI debe contener solo números y tener 8 dígitos',
   })
   dni: string;
+
+  @IsOptional()
+  @IsString({ message: 'La fecha de nacimiento debe ser un texto' })
+  birthdate?: string;
 }

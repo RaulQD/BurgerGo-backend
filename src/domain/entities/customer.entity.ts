@@ -5,6 +5,7 @@ interface CustomerData {
   last_name?: string;
   phone?: string;
   dni?: string;
+  birthdate?: string;
 }
 
 export class Customer {
@@ -15,19 +16,21 @@ export class Customer {
     public dni: string,
     public phone: string,
     public user_id: string,
-    public birthday?: Date,
+    public birthdate?: Date,
   ) {
     this.validateDNI(dni);
     this.validatePhone(phone);
   }
   private validateDNI(dni: string) {
-    if (dni.length === 0) {
-      throw new ValidationError('DNI debe tener 8 caracteres.');
+    if (!/^[0-9]{8}$/.test(dni)) {
+      throw new ValidationError('El DNI debe tener exactamente 8 dígitos.');
     }
   }
   private validatePhone(phone: string) {
-    if (phone.length !== 9) {
-      throw new ValidationError('El telefono debe tener 9 caracretes');
+    if (!/^[0-9]{9}$/.test(phone)) {
+      throw new ValidationError(
+        'El teléfono debe tener exactamente 9 dígitos.',
+      );
     }
   }
   updateProfile(data: CustomerData) {
@@ -40,6 +43,15 @@ export class Customer {
     if (data.dni) {
       this.validateDNI(data.dni);
       this.dni = data.dni;
+    }
+    if (data.birthdate) {
+      const birthDate = new Date(`${data.birthdate}T12:00:00Z`);
+      if (isNaN(birthDate.getTime())) {
+        throw new ValidationError(
+          'El formato de fecha de nacimiento es inválido (usa YYYY-MM-DD)',
+        );
+      }
+      this.birthdate = birthDate;
     }
   }
 }

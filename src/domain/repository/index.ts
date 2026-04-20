@@ -3,3 +3,4 @@ export * from './email-verification.repository.interface';
 export * from './rol.repository.interface';
 export * from './unit-of-work.interface';
 export * from './user.repository.interface';
+export * from './address.repository.interface';

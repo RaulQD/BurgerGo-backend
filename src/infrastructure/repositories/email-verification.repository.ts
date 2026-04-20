@@ -11,11 +11,24 @@ export class EmailVerificationRepository
     private readonly repository: Repository<EmailVerificationEntity>,
   ) {}
 
+  async findLastByUserId(userId: string): Promise<EmailVerification | null> {
+    const entity = await this.repository.findOne({
+      where: {
+        user: { id: userId },
+        verified: false,
+      },
+      order: { created_at: 'DESC' }, // ← el más reciente sin importar expiración
+      relations: ['user'],
+    });
+    return entity ? this.toDomain(entity) : null;
+  }
+
   async save(emailVerification: EmailVerification): Promise<EmailVerification> {
     const entity = this.toTypeORM(emailVerification);
     const saved = await this.repository.save(entity);
     return this.toDomain(saved);
   }
+
   async findActiveByUserId(userId: string): Promise<EmailVerification | null> {
     const entity = await this.repository.findOne({
       where: {
@@ -27,6 +40,7 @@ export class EmailVerificationRepository
     });
     return entity ? this.toDomain(entity) : null;
   }
+
   async invalidateUserToken(userId: string): Promise<void> {
     await this.repository.update(
       {
@@ -36,6 +50,7 @@ export class EmailVerificationRepository
       { expired_at: new Date() },
     );
   }
+
   async findActiveByToken(token: string): Promise<EmailVerification | null> {
     const entity = await this.repository.findOne({
       where: {
@@ -47,15 +62,22 @@ export class EmailVerificationRepository
     });
     return entity ? this.toDomain(entity) : null;
   }
+
   async markAsVerified(id: string): Promise<void> {
     await this.repository.update({ id }, { verified: true });
   }
+
+  async incrementAttempts(id: string): Promise<void> {
+    await this.repository.increment({ id }, 'attempts', 1);
+  }
+
   private toDomain(entity: EmailVerificationEntity): EmailVerification {
     return new EmailVerification(
       entity.id,
       entity.verification_token,
       entity.expired_at,
       entity.verified,
+      entity.attempts,
       entity.created_at,
       entity.user.id,
     );
@@ -68,6 +90,7 @@ export class EmailVerificationRepository
     entity.verification_token = emailVerification.verification_token;
     entity.expired_at = emailVerification.expired_at;
     entity.verified = emailVerification.verified;
+    entity.attempts = emailVerification.attempts;
     entity.created_at = emailVerification.created_at;
     const userEntity = new UserEntity();
     userEntity.id = emailVerification.user_id;

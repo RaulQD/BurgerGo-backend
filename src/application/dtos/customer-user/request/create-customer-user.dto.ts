@@ -5,6 +5,7 @@ import {
   IsString,
   IsUUID,
   Length,
+  Matches,
 } from 'class-validator';
 
 export class CreateCustomerDTO {
@@ -24,14 +25,16 @@ export class CreateCustomerDTO {
 
   @IsNotEmpty({ message: 'El teléfono es requerido' })
   @IsString({ message: 'El teléfono debe ser un texto' })
-  @Length(7, 15, {
-    message: 'El teléfono debe tener entre 7 y 15 caracteres',
+  @Matches(/^[0-9]{9}$/, {
+    message: 'El teléfono debe tener exactamente 9 dígitos.',
   })
   phone: string;
 
   @IsNotEmpty({ message: 'El DNI es requerido' })
   @IsString({ message: 'El DNI debe ser un texto' })
-  @Length(8, 8, { message: 'El DNI debe tener 8 caracteres' })
+  @Matches(/^[0-9]{8}$/, {
+    message: 'El DNI debe tener exactamente 8 dígitos.',
+  })
   dni: string;
   @IsNotEmpty({ message: 'El email es requerido' })
   @IsEmail({}, { message: 'El email debe tener un formato válido' })

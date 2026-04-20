@@ -1,17 +1,12 @@
-export enum UserType {
-  ADMIN = 'admin',
-  EMPLOYEE = 'employee',
-  CUSTOMER = 'customer',
-}
 export class User {
   constructor(
     public readonly id: string,
     public email: string,
     public password: string,
     public username: string | null,
-    public type: UserType,
-    public email_verified: boolean,
+    public rol_name: string,
     public rol_id: string,
+    public email_verified: boolean,
     public readonly created_at: Date = new Date(),
     public readonly updated_at: Date = new Date(),
   ) {
@@ -33,5 +28,14 @@ export class User {
 
   canLogin(): boolean {
     return this.email_verified;
+  }
+  isAdmin(): boolean {
+    return this.rol_name === 'admin';
+  }
+  isEmployee(): boolean {
+    return this.rol_name === 'employee';
+  }
+  isCustomer(): boolean {
+    return this.rol_name === 'customer';
   }
 }

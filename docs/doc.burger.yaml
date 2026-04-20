@@ -1,0 +1,867 @@
+openapi: 3.0.1
+info:
+  title: API KEY BURGER GO
+  description: |
+    Burgergo-backend es una solución integral para la gestión de pedidos de comida a domicilio, 
+    diseñada con los principios de Clean Architecture. Proporciona una plataforma robusta para 
+    la autenticación de usuarios, administración de empleados, gestión detallada de direcciones 
+    de clientes, catálogo interactivo de productos por categorías, sistema dinámico de carrito 
+    de compras y control avanzado del ciclo de vida de los pedidos, optimizando la experiencia 
+    de entrega y la gestión interna del restaurante.
+  contact:
+    name: Raul
+    email: raul.g.quispe@gmail.com
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: 'https://burgergo-backend-production.up.railway.app'
+    description: 'AMBIENTE DE PRUEBAS'
+  - url: 'http://localhost:3000'
+    description: 'AMBIENTE LOCAL'
+
+tags:
+  - name: Autenticación
+    description: Registro, login y verificación de cuenta
+  - name: Perfil
+    description: Gestión del perfil del cliente autenticado
+  - name: Direcciones
+    description: CRUD completo de direcciones de envío del cliente
+
+paths:
+
+  # ── AUTENTICACIÓN ─────────────────────────────────────────────────────────
+  /api/auth/signin:
+    post:
+      tags:
+        - Autenticación
+      summary: Iniciar sesión
+      description: Inicia sesión con email o username y contraseña. Si la cuenta no está verificada, retorna 401.
+      operationId: authSignIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: "juan@correo.com"
+              password: "Password1"
+      responses:
+        '200':
+          description: Inicio de sesión exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Datos de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Credenciales incorrectas o cuenta no verificada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/verify-account:
+    post:
+      tags:
+        - Autenticación
+      summary: Verificar cuenta (Magic Link)
+      description: |
+        Verifica el correo electrónico validando el JWT de verificación enviado al correo.  
+        **IMPORTANTE:** No requiere Authorization header. El token va en el body.
+      operationId: verifyEmailAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+            example:
+              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        '200':
+          description: Cuenta verificada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyAccountResponse'
+        '400':
+          description: El token es inválido, ha expirado o ya fue utilizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/resend-code:
+    post:
+      tags:
+        - Autenticación
+      summary: Reenviar código de verificación
+      description: Reenvía un nuevo enlace de Magic Link al correo del usuario. El enlace anterior queda invalidado.
+      operationId: resendVerificationCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendCodeRequest'
+            example:
+              email: "juan@correo.com"
+      responses:
+        '200':
+          description: Correo de verificación reenviado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Un nuevo enlace de verificación ha sido enviado a tu correo."
+                  data:
+                    type: object
+        '400':
+          description: Email inválido o no registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── CLIENTE ────────────────────────────────────────────────────────────────
+  /api/customer/signup:
+    post:
+      tags:
+        - Autenticación
+      summary: Registrar nuevo cliente
+      description: Crea una nueva cuenta de cliente. Se envía automáticamente un correo de verificación.
+      operationId: registerCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              name: "Juan"
+              last_name: "Pérez"
+              phone: "987654321"
+              dni: "12345678"
+              email: "juan@correo.com"
+              password: "Password1"
+      responses:
+        '201':
+          description: Cliente registrado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          description: Datos de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: El correo electrónico ya está registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "El correo juan@correo.com ya está registrado, por favor verifique su correo"
+
+  /api/customer/profile:
+    get:
+      tags:
+        - Perfil
+      summary: Obtener perfil del cliente
+      description: Retorna los datos del usuario y cliente autenticado, incluyendo sus datos personales.
+      operationId: getProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Perfil obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '401':
+          description: Token inválido o ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags:
+        - Perfil
+      summary: Actualizar perfil del cliente
+      description: Actualiza los datos personales del cliente autenticado (nombre, apellido, teléfono, DNI y fecha de nacimiento).
+      operationId: updateProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+            example:
+              name: "Juan"
+              last_name: "Pérez"
+              phone: "987654321"
+              dni: "12345678"
+              birthdate: "1995-06-15"
+      responses:
+        '200':
+          description: Perfil actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateProfileResponse'
+        '400':
+          description: Datos de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Token inválido o ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/customer/change-password:
+    patch:
+      tags:
+        - Perfil
+      summary: Cambiar contraseña
+      description: Permite al cliente autenticado cambiar su contraseña actual por una nueva.
+      operationId: changePassword
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+            example:
+              currentPassword: "Password1"
+              newPassword: "NewPassword2"
+              confirmedPassword: "NewPassword2"
+      responses:
+        '200':
+          description: Contraseña cambiada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "La contraseña se cambio exitosamente"
+        '400':
+          description: La contraseña actual es incorrecta o las nuevas contraseñas no coinciden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Token inválido o ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── DIRECCIONES ────────────────────────────────────────────────────────────
+  /api/address:
+    get:
+      tags:
+        - Direcciones
+      summary: Listar direcciones del cliente
+      description: Retorna todas las direcciones de envío registradas por el cliente autenticado.
+      operationId: getAddresses
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de direcciones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AddressResponse'
+        '401':
+          description: Token inválido o ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Direcciones
+      summary: Crear dirección
+      description: Registra una nueva dirección de envío para el cliente autenticado.
+      operationId: createAddress
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAddressRequest'
+            example:
+              houseType: "casa"
+              department: "Lima"
+              province: "Lima"
+              district: "Miraflores"
+              address: "Av. Larco 123"
+              apartmentNumber: "402"
+              reference: "Frente al parque"
+              isDefault: false
+      responses:
+        '201':
+          description: Dirección creada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Dirección creada exitosamente"
+                  data:
+                    $ref: '#/components/schemas/AddressResponse'
+        '400':
+          description: Datos de entrada inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '401':
+          description: Token inválido o ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/address/{addressId}:
+    put:
+      tags:
+        - Direcciones
+      summary: Actualizar dirección
+      description: Actualiza los datos completos de una dirección existente del cliente autenticado.
+      operationId: updateAddress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: addressId
+          in: path
+          required: true
+          description: UUID de la dirección a actualizar
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  $ref: '#/components/schemas/CreateAddressRequest'
+            example:
+              address:
+                houseType: "trabajo"
+                department: "Lima"
+                province: "Lima"
+                district: "San Isidro"
+                address: "Av. El Derby 254"
+                reference: "Torre Camino Real"
+                isDefault: false
+      responses:
+        '200':
+          description: Dirección actualizada correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Dirección actualizada correctamente"
+                  data:
+                    $ref: '#/components/schemas/AddressResponse'
+        '401':
+          description: Token inválido o ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Dirección no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Direcciones
+      summary: Eliminar dirección
+      description: Elimina una dirección de envío del cliente autenticado.
+      operationId: deleteAddress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: addressId
+          in: path
+          required: true
+          description: UUID de la dirección a eliminar
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Dirección eliminada correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Dirección eliminada correctamente"
+                  deleteId:
+                    type: string
+                    format: uuid
+        '401':
+          description: Token inválido o ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Dirección no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags:
+        - Direcciones
+      summary: Establecer dirección predeterminada
+      description: Marca una dirección como la predeterminada del cliente. Las demás son desmarcadas automáticamente.
+      operationId: setDefaultAddress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: addressId
+          in: path
+          required: true
+          description: UUID de la dirección que será la predeterminada
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Dirección predeterminada actualizada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "La dirección predeterminada ha sido cambiada."
+        '401':
+          description: Token inválido o ausente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Dirección no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+# ── COMPONENTES ──────────────────────────────────────────────────────────────
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT obtenido en el login o verificación de cuenta.
+
+  schemas:
+
+    # ── Auth Schemas ────────────────────────────────────────────────────────
+    LoginRequest:
+      type: object
+      required:
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Requerido si no se proporciona username
+          example: "juan@correo.com"
+        username:
+          type: string
+          description: Requerido si no se proporciona email
+          minLength: 4
+          maxLength: 20
+          example: "juanperez"
+        password:
+          type: string
+          format: password
+          description: 8-12 caracteres, al menos 1 mayúscula, 1 minúscula y 1 número
+          minLength: 8
+          maxLength: 12
+          example: "Password1"
+
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Bienvenido a BurgerGO"
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        access_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    VerifyAccountRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: JWT de verificación extraído de la URL mágica enviada al correo.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    VerifyAccountResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Cuenta verificada correctamente. Ahora puedes acceder a la plataforma."
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        access_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    ResendCodeRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: "juan@correo.com"
+
+    RegisterRequest:
+      type: object
+      required:
+        - name
+        - last_name
+        - phone
+        - dni
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "Juan"
+        last_name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "Pérez"
+        phone:
+          type: string
+          minLength: 7
+          maxLength: 15
+          example: "987654321"
+        dni:
+          type: string
+          minLength: 8
+          maxLength: 8
+          example: "12345678"
+        email:
+          type: string
+          format: email
+          example: "juan@correo.com"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 12
+          description: Al menos 1 mayúscula, 1 minúscula y 1 número
+          example: "Password1"
+        rol_id:
+          type: string
+          format: uuid
+          description: Opcional. UUID del rol asignado al usuario.
+
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta."
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserResponse'
+
+    # ── Profile Schemas ─────────────────────────────────────────────────────
+    ProfileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        rol:
+          type: string
+          example: "customer"
+        email_verified:
+          type: boolean
+        customer:
+          $ref: '#/components/schemas/CustomerResponse'
+
+    UpdateProfileRequest:
+      type: object
+      required:
+        - name
+        - last_name
+        - phone
+        - dni
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          pattern: '^[a-zA-ZÀ-ÿ\s]+$'
+          description: Solo letras y espacios
+          example: "Juan"
+        last_name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "Pérez"
+        phone:
+          type: string
+          pattern: '^[0-9]{9}$'
+          description: Exactamente 9 dígitos numéricos
+          example: "987654321"
+        dni:
+          type: string
+          pattern: '^[0-9]{8}$'
+          description: Exactamente 8 dígitos numéricos
+          example: "12345678"
+        birthdate:
+          type: string
+          format: date
+          description: Opcional. Formato YYYY-MM-DD
+          example: "1995-06-15"
+
+    UpdateProfileResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Perfil de cliente actualizado correctamente"
+        customer:
+          $ref: '#/components/schemas/CustomerResponse'
+
+    ChangePasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+        - confirmedPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+          minLength: 8
+          description: Contraseña actual. Al menos 1 mayúscula, 1 minúscula y 1 número
+          example: "Password1"
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          description: Nueva contraseña. Al menos 1 mayúscula, 1 minúscula y 1 número
+          example: "NewPassword2"
+        confirmedPassword:
+          type: string
+          format: password
+          minLength: 8
+          description: Confirmación de la nueva contraseña. Debe ser igual a newPassword
+          example: "NewPassword2"
+
+    # ── Address Schemas ─────────────────────────────────────────────────────
+    CreateAddressRequest:
+      type: object
+      required:
+        - houseType
+        - department
+        - province
+        - district
+        - address
+      properties:
+        houseType:
+          type: string
+          enum: [casa, trabajo, pareja, other]
+          example: "casa"
+        department:
+          type: string
+          example: "Lima"
+        province:
+          type: string
+          example: "Lima"
+        district:
+          type: string
+          example: "Miraflores"
+        address:
+          type: string
+          maxLength: 250
+          example: "Av. Larco 123"
+        apartmentNumber:
+          type: string
+          maxLength: 50
+          description: Opcional. Número de apartamento o piso
+          example: "402"
+        reference:
+          type: string
+          maxLength: 250
+          description: Opcional. Referencia de ubicación
+          example: "Frente al parque Kennedy"
+        isDefault:
+          type: boolean
+          description: Opcional. Si es true, se establece como dirección predeterminada
+          default: false
+
+    AddressResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        houseType:
+          type: string
+          enum: [casa, trabajo, pareja, other]
+        department:
+          type: string
+        province:
+          type: string
+        district:
+          type: string
+        address:
+          type: string
+        apartmentNumber:
+          type: string
+          nullable: true
+        reference:
+          type: string
+          nullable: true
+        isDefault:
+          type: boolean
+
+    # ── Shared Schemas ──────────────────────────────────────────────────────
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        rol:
+          type: string
+          example: "customer"
+        email_verified:
+          type: boolean
+
+    CustomerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        last_name:
+          type: string
+        dni:
+          type: string
+        phone:
+          type: string
+        birthdate:
+          type: string
+          format: date
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Mensaje de error descriptivo"
+
+    ValidationError:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Validation failed"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              property:
+                type: string
+                example: "phone"
+              constraints:
+                type: object
+                additionalProperties:
+                  type: string
+                example:
+                  matches: "El teléfono debe contener solo números y tener 9 dígitos"

@@ -3,11 +3,13 @@ import express, { Express } from 'express';
 import morgan from 'morgan';
 import { errorHandler } from './presentation/http/middlewares/errors/error-handler.middleware';
 import cors from 'cors';
-import { corsConfig } from './config/cors.config';
 import cookieParser from 'cookie-parser';
+import { corsConfig } from './presentation/http/config/cors.config';
 
 interface AppConfig {
   authRouter: Router;
+  customerRouter: Router;
+  addressRouter: Router;
 }
 
 export const createApp = (config: AppConfig): Express => {
@@ -20,6 +22,8 @@ export const createApp = (config: AppConfig): Express => {
   app.use(cookieParser());
 
   app.use('/api/auth', config.authRouter);
+  app.use('/api/customer', config.customerRouter);
+  app.use('/api/address', config.addressRouter);
 
   app.use(errorHandler);
   return app;

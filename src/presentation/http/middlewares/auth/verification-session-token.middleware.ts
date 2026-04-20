@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../../../../utils';
-import { UNAUTHORIZED } from '../../../../constants/http';
-import { ITokenService } from '../../../../domain/services/token.service.interface';
+import { UNAUTHORIZED } from '../../../../domain/errors/http-status-code';
+import { ITokenService } from '../../../../domain/interfaces/token.interface';
 
 //EXTENDER EL REQUEST PARA QUE TENGA UNA PROPIEDAD PERSONALIZADA
 declare global {

@@ -1,8 +1,8 @@
 import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class VerifyTokenDto {
-  @IsString()
-  @Length(6, 6, { message: 'Token de verificación inválido' })
+  @IsNotEmpty({ message: 'El token de verificación es requerido' })
+  @IsString({ message: 'El token debe ser un texto válido' })
   token: string;
 }
 
