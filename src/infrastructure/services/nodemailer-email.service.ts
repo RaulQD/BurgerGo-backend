@@ -1,10 +1,10 @@
 import nodemailer, { Transporter } from 'nodemailer';
-import { IEmailService } from '../../domain/services/email.services.interface';
+import { IEmailService } from '../../domain/interfaces/email.interface';
 import {
   getVerificationEmailTemplate,
   getWelcomeEmailTemplate,
 } from '../../shared/templates/notification-email.template';
-import { logger } from '../../utils';
+import { logger } from '../../shared/logger';
 
 export class NodemailerEmailService implements IEmailService {
   private transporter: Transporter;
@@ -23,12 +23,12 @@ export class NodemailerEmailService implements IEmailService {
   async sendVerificationEmail(
     to: string,
     name: string,
-    verificationCode: string,
+    verificationUrl: string,
   ): Promise<void> {
     const nameComplete = name.split(' ')[0];
     const verificationEmailParams = {
       nameComplete,
-      verificationCode,
+      verificationUrl,
     };
     const mailOptions = {
       from: `"BurgerGo" <${process.env.MAILER_EMAIL}>`,

@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { VerifyAccessTokenUseCase } from '../../../../application/use-cases/verify-token.use-case';
+
 import { User } from '../../../../domain/entities/user.entity';
+import { VerifyAccessTokenUseCase } from '../../../../application/use-cases';
 
 //EXTENDER EL REQUEST DE EXPRESS PARA QUE TENGA EL USUARIO
 declare global {

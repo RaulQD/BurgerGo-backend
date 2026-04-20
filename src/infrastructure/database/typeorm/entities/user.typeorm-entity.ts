@@ -34,8 +34,6 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 200 })
   @Exclude()
   password: string;
-  @Column({ type: 'enum', enum: UserType, default: UserType.CUSTOMER })
-  type: UserType;
   @Column({ type: 'boolean', default: false })
   email_verified: boolean;
   @CreateDateColumn({ name: 'created_at', select: false })

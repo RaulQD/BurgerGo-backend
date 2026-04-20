@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
-import { AppError, logger } from '../../../../utils';
-import { INTERNAL_SERVER_ERROR } from '../../../../constants/http';
+import { INTERNAL_SERVER_ERROR } from '../../../../domain/errors/http-status-code';
+import { AppError } from '../../../../domain/errors/app-error.error';
+import { logger } from '../../../../shared/logger';
 const handlerAppError = (res: Response, error: AppError) => {
   res.status(error.statusCode).json({
     message: error.message,

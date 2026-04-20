@@ -1,5 +1,5 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { ITokenService } from '../../domain/services/token.service.interface';
+import { ITokenService } from '../../domain/interfaces/token.interface';
 
 interface JwtPayload {
   userId: string;

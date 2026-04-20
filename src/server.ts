@@ -1,46 +1,31 @@
-import express, { Application, Router } from 'express';
-import morgan from 'morgan';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
-import { corsConfig } from './config/cors.config';
-import { logger } from './utils/logger';
-import { errorHandler } from './middleware/error-handler.middleware';
-
-dotenv.config();
-interface Options {
-  routes: Router;
-}
+import { Application } from 'express';
+import { logger } from './utils';
 
 export class Server {
-  public app: Application;
-  private readonly routes: Router;
-  private logger = logger;
-  constructor(options: Options) {
-    const { routes } = options;
-    this.routes = routes;
-    this.app = express();
-    this.initializeMiddlewares();
-    this.initializeRoutes();
-    this.initializeErrorHandler();
+  public readonly app: Application;
+  private readonly logger = logger;
+
+  constructor(app: Application) {
+    this.app = app;
   }
 
-  private initializeMiddlewares() {
-    this.app.use(cors(corsConfig));
-    this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: true }));
-    this.app.use(morgan('dev'));
-    this.app.use(cookieParser());
-  }
-  private initializeRoutes() {
-    this.app.use(this.routes);
-  }
-  private initializeErrorHandler() {
-    this.app.use(errorHandler);
-  }
-  public listen(port: number) {
+  /**
+   * Inicia el servidor en el puerto especificado
+   * @param port - Puerto en el que escuchará el servidor
+   */
+  public listen(port: number): void {
     this.app.listen(port, () => {
-      this.logger.info(`Server is running on port ${port}`);
+      this.logger.info(`=========== Server running on port ${port} ==========`);
+      this.logger.info(
+        `=========== Environment: ${process.env.NODE_ENV || 'development'} ==========`,
+      );
     });
+  }
+
+  /**
+   * Cierra el servidor (útil para testing y shutdown graceful)
+   */
+  public close(): void {
+    this.logger.info('Server closing...');
   }
 }

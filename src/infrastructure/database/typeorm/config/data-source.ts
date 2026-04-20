@@ -7,24 +7,12 @@ export const AppDataBaseSources = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST || 'localhost',
   port: Number(process.env.DB_PORT) || 5432,
-  username: process.env.DB_USERNAME || 'postgres',
+  username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || '1234',
   database: process.env.DB_NAME || 'sysburger',
   synchronize: true,
   logging: false,
   // Entidades de TypeORM en Clean Architecture
-  entities: [
-    join(
-      __dirname,
-      '../infrastructure/database/typeorm/entities/**/*{.ts,.js}',
-    ),
-    // Mantén las entidades viejas por compatibilidad (temporal)
-    join(__dirname, '../entities/**/*{.ts,.js}'),
-  ],
-  migrations: [
-    join(
-      __dirname,
-      '../infrastructure/database/typeorm/migrations/**/*{.ts,.js}',
-    ),
-  ],
+  entities: [join(__dirname, '../entities/**/*{.ts,.js}')],
+  migrations: [join(__dirname, '../migrations/**/*{.ts,.js}')],
 });

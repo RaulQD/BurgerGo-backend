@@ -3,6 +3,8 @@ import { Customer } from '../../domain/entities/customer.entity';
 import { ICustomerRepository } from '../../domain/repository/customer.repository.interface';
 import { CustomerEntity } from '../database/typeorm/entities/customer.typeorm-entity';
 import { UserEntity } from '../database/typeorm/entities/user.typeorm-entity';
+import { AppError } from '../../utils';
+import { NOT_FOUND } from '../../domain/errors/http-status-code';
 
 export class CustomerRepository implements ICustomerRepository {
   constructor(private readonly repository: Repository<CustomerEntity>) {}
@@ -33,8 +35,24 @@ export class CustomerRepository implements ICustomerRepository {
     return this.toDomain(saved);
   }
   async update(customer: Customer): Promise<Customer> {
-    const entity = this.toTypeORM(customer);
-    const saved = await this.repository.save(entity);
+    const existing = await this.repository.findOne({
+      where: { id: customer.id },
+      relations: ['user'],
+    });
+    if (!existing) {
+      throw new Error(
+        `[CustomerRepository] Customer ${customer.id} no encontrado para update`,
+      );
+    }
+    if (existing.name !== customer.name) existing.name = customer.name;
+    if (existing.last_name !== customer.last_name)
+      existing.last_name = customer.last_name;
+    if (existing.phone !== customer.phone) existing.phone = customer.phone;
+    if (existing.dni !== customer.dni) existing.dni = customer.dni;
+    if (customer.birthdate !== undefined) {
+      existing.birthdate = customer.birthdate ?? null;
+    }
+    const saved = await this.repository.save(existing);
     return this.toDomain(saved);
   }
   async delete(id: string): Promise<void> {
@@ -48,7 +66,7 @@ export class CustomerRepository implements ICustomerRepository {
       entity.dni,
       entity.phone,
       entity.user.id,
-      entity.birthday ?? undefined,
+      entity.birthdate ?? undefined,
     );
   }
   private toTypeORM(customer: Customer): CustomerEntity {
@@ -58,7 +76,7 @@ export class CustomerRepository implements ICustomerRepository {
     entity.last_name = customer.last_name;
     entity.dni = customer.dni;
     entity.phone = customer.phone;
-    entity.birthday = customer.birthday ?? null;
+    entity.birthdate = customer.birthdate ?? null;
     // entity.user se maneja aparte
     const userEntity = new UserEntity();
     userEntity.id = customer.user_id;
