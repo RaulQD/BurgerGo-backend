@@ -3,8 +3,6 @@ import { Customer } from '../../domain/entities/customer.entity';
 import { ICustomerRepository } from '../../domain/repository/customer.repository.interface';
 import { CustomerEntity } from '../database/typeorm/entities/customer.typeorm-entity';
 import { UserEntity } from '../database/typeorm/entities/user.typeorm-entity';
-import { AppError } from '../../utils';
-import { NOT_FOUND } from '../../domain/errors/http-status-code';
 
 export class CustomerRepository implements ICustomerRepository {
   constructor(private readonly repository: Repository<CustomerEntity>) {}

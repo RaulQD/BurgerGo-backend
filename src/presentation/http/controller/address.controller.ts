@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import { GetAddressCustomerUseCase } from '../../../application/use-cases/customer/address/get-customer-addresses.use-case';
-import { catchError } from '../../../utils';
 import { CREATED, OK } from '../../../domain/errors/http-status-code';
 import { CreateCustomerAddressUseCase } from '../../../application/use-cases/customer/address/create-customer-address.use-case';
 import { DeleteCustomerAddressUseCase } from '../../../application/use-cases/customer/address/delete-customer-address.use-case';
 import { SetDefaultAddressUseCase } from '../../../application/use-cases/customer/address/set-customer-address.use-case';
 import { UpdateCustomerAddressUseCase } from '../../../application/use-cases/customer/address/update-customer-address.use-case';
+import { catchError } from '../middlewares/catch-error.middleware';
 
 export class AddressController {
   constructor(

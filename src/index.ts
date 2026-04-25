@@ -31,7 +31,7 @@ async function main(): Promise<void> {
     logger.info(`=========== DB Name: ${process.env.DB_NAME} ==========`);
 
     // Compose Controllers (Dependency Injection - Clean Architecture)
-    const { authController, tokenService, verifyAccessToken } =
+    const { authController, verifyAccessToken } =
       composeAuthController(AppDataBaseSources);
 
     const { customerController } =

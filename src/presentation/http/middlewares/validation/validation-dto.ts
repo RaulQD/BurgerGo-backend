@@ -1,7 +1,7 @@
 import { plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../../../../utils';
+import { logger } from '../../../../shared/logger';
 
 export function validateMiddlewareDTO(type: any) {
   return async (

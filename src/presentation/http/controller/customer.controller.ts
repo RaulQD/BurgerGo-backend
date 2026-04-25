@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { catchError } from '../../../utils';
 import { UserMapper } from '../../../application/mappers/user.mapper';
 import { CREATED, OK } from '../../../domain/errors/http-status-code';
 import {
@@ -8,6 +7,7 @@ import {
   RegisterCustomerUseCase,
   UpdateCustomerUseCase,
 } from '../../../application/use-cases';
+import { catchError } from '../middlewares/catch-error.middleware';
 
 export class CustomerController {
   constructor(
