@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import dotenv from 'dotenv';
 import { createApp } from './app';
 import { logger } from './shared/logger';
 import { composeAuthController } from './presentation/http/composition/auth.composition';
@@ -12,11 +11,9 @@ import {
   CustomerRoutes,
 } from './presentation/http/routes';
 import { composeAddressController } from './presentation/http/composition/address.composition';
+import { envConfig } from './infrastructure/config/env.config';
 
-// Cargar variables de entorno
-dotenv.config();
-
-const PORT = process.env.PORT || 3000;
+const PORT = envConfig.app.port || 3000;
 
 /**
  * Función principal que inicia la aplicación
@@ -27,8 +24,8 @@ async function main(): Promise<void> {
     //Inicializar base de datos
     await AppDataBaseSources.initialize();
     logger.info(`=========== DB Connected ==========`);
-    logger.info(`=========== DB Port: ${process.env.DB_PORT} ==========`);
-    logger.info(`=========== DB Name: ${process.env.DB_NAME} ==========`);
+    logger.info(`=========== DB Port: ${envConfig.database.port} ==========`);
+    logger.info(`=========== DB Name: ${envConfig.database.name} ==========`);
 
     // Compose Controllers (Dependency Injection - Clean Architecture)
     const { authController, verifyAccessToken } =
@@ -57,7 +54,7 @@ async function main(): Promise<void> {
     server.listen(Number(PORT));
   } catch (error) {
     console.error(error);
-    logger.error(' Error during application initialization:', error);
+    logger.error(error, ' Error during application initialization:');
     process.exit(1);
   }
 }

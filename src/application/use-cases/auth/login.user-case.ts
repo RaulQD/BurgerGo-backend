@@ -9,13 +9,13 @@ import { ITokenService } from '../../../domain/interfaces/token.interface';
 import { AppError } from '../../../domain/errors/app-error.error';
 
 export interface LoginRequest {
-  email?: string;
-  username?: string;
+  email: string;
   password: string;
 }
 export interface LoginResponse {
   user: User;
   accessToken: string;
+  refreshToken: string;
 }
 
 export class LoginUseCase {
@@ -26,15 +26,11 @@ export class LoginUseCase {
   ) {}
 
   async execute(data: LoginRequest): Promise<LoginResponse> {
-    // buscar usuario por emial
-    let user: User | null = null;
-    if (data.email) {
-      user = await this.userRepository.findByEmail(data.email.toLowerCase());
-    } else if (data.username) {
-      user = await this.userRepository.findByUserName(
-        data.username.toLowerCase(),
-      );
-    }
+    // buscar usuario por email
+    const user = await this.userRepository.findByEmail(
+      data.email.toLowerCase(),
+    );
+
     if (!user) {
       throw new AppError(
         'El usuario o la contraseña son incorrectos.',
@@ -63,6 +59,10 @@ export class LoginUseCase {
       user.id,
       user.email,
     );
-    return { user, accessToken };
+    const refreshToken = this.tokenService.generateRefreshToken(
+      user.id,
+      user.email,
+    );
+    return { user, accessToken, refreshToken };
   }
 }

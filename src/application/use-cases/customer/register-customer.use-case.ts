@@ -80,7 +80,6 @@ export class RegisterCustomerUseCase {
         this.generateUUID(),
         data.email.toLowerCase(),
         hashedPassword,
-        null,
         customerRole.name,
         customerRole.id,
         false, // email no verificado
@@ -142,7 +141,7 @@ export class RegisterCustomerUseCase {
       } catch (emailError) {
         // Si falla el email, no revertimos la transacción ya confirmada
         // pero podríamos loguear el error
-        logger.error('Error sending verification email:', emailError);
+        logger.error(emailError, 'Error sending verification email:');
         // La cuenta se creó correctamente, solo falló el envío del email
       }
 

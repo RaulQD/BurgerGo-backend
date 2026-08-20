@@ -3,8 +3,7 @@ export class User {
     public readonly id: string,
     public email: string,
     public password: string,
-    public username: string | null,
-    public rol_name: string,
+    public role_name: string, // Cambiado de 'rol_name'
     public rol_id: string,
     public email_verified: boolean,
     public readonly created_at: Date = new Date(),
@@ -30,12 +29,12 @@ export class User {
     return this.email_verified;
   }
   isAdmin(): boolean {
-    return this.rol_name === 'admin';
+    return this.role_name === 'admin';
   }
   isEmployee(): boolean {
-    return this.rol_name === 'employee';
+    return this.role_name === 'employee';
   }
   isCustomer(): boolean {
-    return this.rol_name === 'customer';
+    return this.role_name === 'customer';
   }
 }

@@ -1,0 +1,30 @@
+### 1. Registrar un nuevo usuario
+POST http://localhost:3000/api/auth/signup
+Content-Type: application/json
+
+{
+  "email": "test-resend@example.com",
+  "password": "Password123",
+  "name": "Test",
+  "last_name": "Resend",
+  "phone": "987654321",
+  "dni": "12345678"
+}
+
+### 2. Reenviar código de verificación (sin token)
+# NUEVO ENFOQUE: Solo necesitas el email, NO necesitas token
+POST http://localhost:3000/api/auth/resend-code
+Content-Type: application/json
+
+{
+  "email": "test-resend@example.com"
+}
+
+###
+
+# Notas:
+# - El endpoint /resend-code ahora funciona solo con email (sin token requerido)
+# - Funciona en cualquier momento (no limitado a 10 minutos)
+# - Tiene un cooldown de 90 segundos entre reenvíos
+# - Sigue el estándar de la industria (McDonald's, Uber Eats, DoorDash, etc.)
+# - El servidor debe estar corriendo en http://localhost:3000

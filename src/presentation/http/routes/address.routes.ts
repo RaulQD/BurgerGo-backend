@@ -8,7 +8,7 @@ import { UpdatedAddressCustomerDto } from '../../../application/dtos/address/req
 export const AddressRoutes = (
   addressController: AddressController,
   verifyAccessTokenUseCase: VerifyAccessTokenUseCase,
-) => {
+): Router => {
   const router = Router();
   const validateAccessTokenMiddleware = verifyToken(verifyAccessTokenUseCase);
 

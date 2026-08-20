@@ -27,5 +27,6 @@ export const AuthRoutes = (authController: AuthController): Router => {
     validateMiddlewareDTO(ResendVerificationDto),
     authController.resendVerificationCode,
   );
+  router.post('/refresh-token', authController.refreshToken);
   return router;
 };

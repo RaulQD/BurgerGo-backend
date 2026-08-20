@@ -4,9 +4,9 @@ import { UserEntity } from './user.typeorm-entity';
 @Entity({ name: 'roles' })
 export class RolEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id: string;
   @Column({ type: 'varchar', length: 200 })
-  name!: string;
+  name: string;
   @OneToMany(() => UserEntity, (user) => user.rol)
-  user!: UserEntity[];
+  user: UserEntity[];
 }

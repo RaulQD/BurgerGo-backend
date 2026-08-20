@@ -17,14 +17,14 @@ export class AddressController {
   ) {}
   public getAddressesCustomer = catchError(
     async (req: Request, res: Response) => {
-      const userId = req.userV2.id;
+      const userId = req.user.id;
       const address = await this.getAddressesCustomerUseCase.execute(userId);
       return res.status(OK).json({ data: address });
     },
   );
   public createAddressCustomer = catchError(
     async (req: Request, res: Response) => {
-      const userId = req.userV2.id;
+      const userId = req.user.id;
       const {
         houseType,
         department,
@@ -53,7 +53,7 @@ export class AddressController {
 
   public updateAddressCustomer = catchError(
     async (req: Request, res: Response) => {
-      const userId = req.userV2.id;
+      const userId = req.user.id;
       const { addressId } = req.params;
       const { address } = req.body;
       const response = await this.updateCustomerAddressUseCase.execute(address);
@@ -66,8 +66,9 @@ export class AddressController {
 
   public deleteAddressCustomer = catchError(
     async (req: Request, res: Response) => {
-      const userId = req.userV2.id;
-      const { addressId } = req.params;
+      const userId = req.user.id;
+      // La ruta declara /:addressId, siempre un string (Express 5 tipa string | string[] por params repetibles)
+      const { addressId } = req.params as { addressId: string };
       await this.deleteCustomerAddressUseCase.execute(addressId, userId);
       return res.status(OK).json({
         message: 'Dirección eliminada correctamente',
@@ -76,8 +77,9 @@ export class AddressController {
     },
   );
   public setDefaultAddress = catchError(async (req: Request, res: Response) => {
-    const userId = req.userV2.id;
-    const { addressId } = req.params;
+    const userId = req.user.id;
+    // La ruta declara /:addressId, siempre un string (Express 5 tipa string | string[] por params repetibles)
+    const { addressId } = req.params as { addressId: string };
     await this.setDefaultCustomerAddressUseCase.execute(addressId, userId);
     return res
       .status(OK)

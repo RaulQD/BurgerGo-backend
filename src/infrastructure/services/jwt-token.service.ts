@@ -1,5 +1,7 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { ITokenService } from '../../domain/interfaces/token.interface';
+import { CONFLICT } from '../../domain/errors/http-status-code';
+import { AppError } from '../../domain/errors/app-error.error';
 
 interface JwtPayload {
   userId: string;
@@ -12,6 +14,8 @@ export class JwtTokenService implements ITokenService {
     private readonly expiresIn: string = '1d',
     private readonly temporaryTokenSecret?: string,
     private readonly temporaryTokenExpiration: number = 600,
+    private readonly refreshTokenSecret?: string,
+    private readonly refreshTokenExpiration?: string,
   ) {}
 
   verifyVerificationSessionToken(token: string): {
@@ -91,6 +95,32 @@ export class JwtTokenService implements ITokenService {
         throw error; // Dejar pasar el error original
       }
       throw new Error('Invalid token');
+    }
+  }
+  generateRefreshToken(userId: string, email: string): string {
+    if (!this.refreshTokenSecret) {
+      throw new AppError(
+        'La clave secreta del Token de Refresco no está definida',
+        CONFLICT,
+      );
+    }
+    return jwt.sign({ userId, email }, this.refreshTokenSecret, {
+      expiresIn: this.refreshTokenExpiration,
+    } as SignOptions);
+  }
+  verifyRefreshToken(token: string): { userId: string; email: string } {
+    if (!this.refreshTokenSecret) {
+      throw new AppError(
+        'La clave secreta del Token de Refresco no está definida',
+        CONFLICT,
+      );
+    }
+    try {
+      const decoded = jwt.verify(token, this.refreshTokenSecret) as JwtPayload;
+      return { userId: decoded.userId, email: decoded.email };
+    } catch {
+      // Manejo de errores similar al verifyAccessToken
+      throw new Error('Invalid refresh token');
     }
   }
 }

@@ -6,3 +6,4 @@ export * from './auth/verify-token.use-case';
 export * from './customer/profile/change-password.use-case';
 export * from './customer/register-customer.use-case';
 export * from './customer/profile/update-customer.user-case';
+export * from './auth/refresh-token.use-case';

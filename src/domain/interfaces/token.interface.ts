@@ -11,4 +11,6 @@ export interface ITokenService {
     email: string;
     type: string;
   };
+  generateRefreshToken(userId: string, email: string): string;
+  verifyRefreshToken(token: string): { userId: string; email: string };
 }

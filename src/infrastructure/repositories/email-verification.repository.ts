@@ -4,9 +4,7 @@ import { IEmailVerificationRepository } from '../../domain/repository/email-veri
 import { EmailVerificationEntity } from '../database/typeorm/entities/email-verification.typeorm-entity';
 import { UserEntity } from '../database/typeorm/entities/user.typeorm-entity';
 
-export class EmailVerificationRepository
-  implements IEmailVerificationRepository
-{
+export class EmailVerificationRepository implements IEmailVerificationRepository {
   constructor(
     private readonly repository: Repository<EmailVerificationEntity>,
   ) {}

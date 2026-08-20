@@ -12,7 +12,7 @@ import { CreateCustomerDTO } from '../../../application/dtos/customer-user/reque
 export const CustomerRoutes = (
   customerController: CustomerController,
   verifyAccessTokenUseCase: VerifyAccessTokenUseCase,
-) => {
+): Router => {
   const router = Router();
 
   const validateAccessTokenMiddleware = verifyToken(verifyAccessTokenUseCase);

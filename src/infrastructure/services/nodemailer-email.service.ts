@@ -40,7 +40,7 @@ export class NodemailerEmailService implements IEmailService {
       await this.transporter.sendMail(mailOptions);
       logger.info(`Verification email sent to ${to}`);
     } catch (error) {
-      logger.error(`Error sending verification email to ${to}`, error);
+      logger.error(error, `Error sending verification email to ${to}`);
       throw new Error('ERror sending verification email');
     }
   }
@@ -55,7 +55,7 @@ export class NodemailerEmailService implements IEmailService {
       await this.transporter.sendMail(mailOptions);
       logger.info(`Welcome email sent to ${to}`);
     } catch (error) {
-      logger.error(`Error sending welcome email to ${to}`, error);
+      logger.error(error, `Error sending welcome email to ${to}`);
       throw new Error('Error sending welcome email');
     }
   }

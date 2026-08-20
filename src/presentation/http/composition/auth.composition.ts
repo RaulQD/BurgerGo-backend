@@ -5,11 +5,11 @@ import { JwtTokenService } from '../../../infrastructure/services/jwt-token.serv
 import { EmailVerificationEntity } from '../../../infrastructure/database/typeorm/entities/email-verification.typeorm-entity';
 import { NodemailerEmailService } from '../../../infrastructure/services/nodemailer-email.service';
 import {
-  GetProfileUseCase,
   LoginUseCase,
   ResendCodeUseCase,
   VerifyAccessTokenUseCase,
   VerifyEmailAccountUseCase,
+  RefreshTokenUseCase,
 } from '../../../application/use-cases';
 import {
   CustomerRepository,
@@ -20,6 +20,7 @@ import {
   CustomerEntity,
   UserEntity,
 } from '../../../infrastructure/database/typeorm/entities';
+import { envConfig } from '../../../infrastructure/config/env.config';
 
 export const composeAuthController = (dataSource: DataSource) => {
   const userRepository = new UserRepository(
@@ -35,10 +36,12 @@ export const composeAuthController = (dataSource: DataSource) => {
   const emailService = new NodemailerEmailService();
   const passwordHasher = new BcryptPasswordHasher();
   const tokenService = new JwtTokenService(
-    process.env.ACCESS_TOKEN_SECRET || 'secret_key_sysburger',
-    process.env.ACCESS_TOKEN_EXPIRY,
-    process.env.TEMPORARY_TOKEN_SECRET,
-    600,
+    envConfig.accessToken.secret,
+    envConfig.accessToken.expiry,
+    envConfig.temporaryToken.secret,
+    envConfig.temporaryToken.expiration,
+    envConfig.refreshToken.secret,
+    envConfig.refreshToken.expiry,
   );
   //Use case
   const loginUseCase = new LoginUseCase(
@@ -47,6 +50,10 @@ export const composeAuthController = (dataSource: DataSource) => {
     tokenService,
   );
 
+  const refreshTokenUseCase = new RefreshTokenUseCase(
+    userRepository,
+    tokenService,
+  );
   const verifyEmailAccount = new VerifyEmailAccountUseCase(
     userRepository,
     emailVerificationRepository,
@@ -68,6 +75,7 @@ export const composeAuthController = (dataSource: DataSource) => {
     loginUseCase,
     verifyEmailAccount,
     resendCodeUseCase,
+    refreshTokenUseCase,
   );
   return { authController, tokenService, verifyAccessToken };
 };

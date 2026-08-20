@@ -21,13 +21,6 @@ export class UserRepository implements IUserRepository {
     });
     return entity ? this.toDomain(entity) : null;
   }
-  async findByUserName(username: string): Promise<User | null> {
-    const entity = await this.repository.findOne({
-      where: { username },
-      relations: ['rol'],
-    });
-    return entity ? this.toDomain(entity) : null;
-  }
 
   async save(user: User): Promise<User> {
     const entity = this.toTypeOrm(user);
@@ -53,7 +46,6 @@ export class UserRepository implements IUserRepository {
       entity.id,
       entity.email,
       entity.password,
-      entity.username,
       entity.rol.name,
       entity.rol.id,
       entity.email_verified,
@@ -66,7 +58,6 @@ export class UserRepository implements IUserRepository {
     entity.id = user.id;
     entity.email = user.email;
     entity.password = user.password;
-    entity.username = user.username;
     entity.email_verified = user.email_verified;
     const rolEntity = new RolEntity();
     rolEntity.id = user.rol_id;

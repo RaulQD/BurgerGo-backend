@@ -88,8 +88,8 @@ export class ResendCodeUseCase {
       );
     } catch (emailError) {
       logger.error(
-        '[ResendCodeUseCase] Error sending verification email:',
         emailError,
+        '[ResendCodeUseCase] Error sending verification email:',
       );
     }
     return {

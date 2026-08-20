@@ -13,6 +13,7 @@ import { AppError } from '../../../domain/errors/app-error.error';
 export interface VerifyTokenResponse {
   user: User;
   access_token: string;
+  refresh_token: string;
 }
 
 export class VerifyEmailAccountUseCase {
@@ -59,9 +60,14 @@ export class VerifyEmailAccountUseCase {
       user.id,
       user.email,
     );
+    const refresh_token = this.tokenService.generateRefreshToken(
+      user.id,
+      user.email,
+    );
     const response = {
       user: user,
       access_token: access_token,
+      refresh_token: refresh_token,
     };
     return response;
   }

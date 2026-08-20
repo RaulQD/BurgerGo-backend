@@ -13,7 +13,7 @@ export class EmailVerificationEntity {
   id: string;
   @Column({ type: 'text' })
   verification_token: string;
-  @Column()
+  @Column({ type: 'timestamp' })
   expired_at: Date;
   @Column({ type: 'boolean', default: false })
   verified: boolean;

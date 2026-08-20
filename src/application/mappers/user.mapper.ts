@@ -9,7 +9,7 @@ export class UserMapper {
     const response: UserResponseDto = {
       id: user.id,
       email: user.email,
-      rol: user.rol_name,
+      rol: user.role_name,
       email_verified: user.email_verified,
     };
     if (customer) {

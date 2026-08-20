@@ -8,7 +8,7 @@ import { VerifyAccessTokenUseCase } from '../../../../application/use-cases';
 declare global {
   namespace Express {
     interface Request {
-      userV2: User;
+      user: User;
     }
   }
 }
@@ -29,7 +29,7 @@ export const verifyToken = (verifyTokenUseCase: VerifyAccessTokenUseCase) => {
 
       const user = await verifyTokenUseCase.execute(token);
       //añadir el usuario al request
-      req.userV2 = user;
+      req.user = user;
       next();
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
@@ -51,5 +51,19 @@ export const verifyToken = (verifyTokenUseCase: VerifyAccessTokenUseCase) => {
         });
       }
     }
+  };
+};
+
+export const requireRoles = () => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({
+        message: 'Acceso denegado: Usuario no autenticado',
+        code: 'USER_NOT_AUTHENTICATED',
+      });
+    }
+    //Aquí se podrían añadir más validaciones de roles o permisos
+    next();
   };
 };

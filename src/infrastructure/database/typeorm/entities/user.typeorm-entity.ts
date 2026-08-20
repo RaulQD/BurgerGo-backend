@@ -23,14 +23,11 @@ export enum UserType {
 }
 @Entity({ name: 'users' })
 @Unique(['email'])
-@Unique(['username'])
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
   @Column({ type: 'varchar', length: 200, nullable: true })
   email: string;
-  @Column({ type: 'varchar', length: 200, nullable: true })
-  username: string | null;
   @Column({ type: 'varchar', length: 200 })
   @Exclude()
   password: string;

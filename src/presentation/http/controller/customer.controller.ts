@@ -30,14 +30,14 @@ export class CustomerController {
     });
   });
   public getProfile = catchError(async (req: Request, res: Response) => {
-    const userId = req.userV2.id;
+    const userId = req.user.id;
     const { user, customer } = await this.getProfileUseCase.execute(userId);
     const userResponse = UserMapper.toResponseDto(user, customer);
     return res.status(OK).json(userResponse);
   });
 
   public updateCustomer = catchError(async (req: Request, res: Response) => {
-    const userId = req.userV2.id;
+    const userId = req.user.id;
     const updateData = req.body;
     const updatedCustomer = await this.updateCustomerUseCase.execute(
       userId,
@@ -61,7 +61,7 @@ export class CustomerController {
     });
   });
   public changePassword = catchError(async (req: Request, res: Response) => {
-    const userId = req.userV2.id;
+    const userId = req.user.id;
     const userData = req.body;
     await this.changePasswordUseCase.execute(userId, userData);
     return res.status(OK).json({

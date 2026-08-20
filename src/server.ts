@@ -1,5 +1,6 @@
 import { Application } from 'express';
 import { logger } from './shared/logger';
+import { envConfig } from './infrastructure/config/env.config';
 
 export class Server {
   public readonly app: Application;
@@ -17,7 +18,7 @@ export class Server {
     this.app.listen(port, () => {
       this.logger.info(`=========== Server running on port ${port} ==========`);
       this.logger.info(
-        `=========== Environment: ${process.env.NODE_ENV || 'development'} ==========`,
+        `=========== Environment: ${envConfig.app.nodeEnv || 'development'} ==========`,
       );
     });
   }
